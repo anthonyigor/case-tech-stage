@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { IProcessesRepository } from "../repositories/processes.repository";
 import { CreateProcessDto } from "../dto/create-process.dto";
 import { ProcessStatus, ProcessType } from "generated/prisma/enums";
@@ -8,6 +8,10 @@ import { AddToolDto } from "../dto/add-tool.dto";
 import { IToolRepository } from "../repositories/tool.repository";
 import { IDocsRepository } from "../repositories/docs.repository";
 import { AddDocDto } from "../dto/add-doc.dto";
+import { PeopleService } from "src/modules/people/services/people.service";
+import { AddOwnerDto } from "../dto/add-owner.dto";
+import { IOwnerRepository } from "../repositories/owner.repository";
+import { Prisma } from "generated/prisma/client";
 
 
 type ProcessTreeNode = FilteredProcess & { children: ProcessTreeNode[] };
@@ -18,7 +22,9 @@ export class ProcessesService {
         private readonly processesRepository: IProcessesRepository,
         private readonly areaRepository: IAreasRepository,
         private readonly toolRepository: IToolRepository,
-        private readonly docsRepository: IDocsRepository
+        private readonly docsRepository: IDocsRepository,
+        private readonly peopleService: PeopleService,
+        private readonly ownerRepository: IOwnerRepository
     ) {}
 
     async create(dto: CreateProcessDto) {
@@ -107,6 +113,24 @@ export class ProcessesService {
 
         const newDoc = await this.docsRepository.create(process_id, dto)
         return newDoc
+    }
+
+    async addOwner(process_id: string, dto: AddOwnerDto) {
+        const process = await this.processesRepository.findById(process_id)
+        if (!process) throw new NotFoundException('Processo não encontrado')
+
+        const person = await this.peopleService.findById(dto.people_id)
+        if (!person) throw new BadRequestException('Pessoa não encontrada')
+
+        try {
+            return await this.ownerRepository.create(process_id, dto);
+        } catch (e) {
+            if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
+                throw new ConflictException('Essa pessoa já é responsável por esse processo');
+            }
+            throw e;
+        }
+        
     }
 
 }

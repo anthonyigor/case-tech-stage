@@ -5,6 +5,7 @@ import { IPeopleRepository } from "./repositories/people.repository";
 import { PeoplePrismaRepository } from "./repositories/prisma/people.prisma.repository";
 
 @Module({
+    exports: [PeopleService],
     controllers: [PeopleController],
     providers: [
         PeopleService,

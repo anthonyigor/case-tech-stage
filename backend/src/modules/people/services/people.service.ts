@@ -19,4 +19,8 @@ export class PeopleService {
         return await this.peopleRepository.findAll()
     }
 
+    async findById(id: string) {
+        return await this.peopleRepository.findById(id)
+    }
+
 }

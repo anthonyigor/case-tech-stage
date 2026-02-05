@@ -3,6 +3,7 @@ import { CreateProcessDto } from "./dto/create-process.dto";
 import { ProcessesService } from "./services/processes.service";
 import { AddToolDto } from "./dto/add-tool.dto";
 import { AddDocDto } from "./dto/add-doc.dto";
+import { AddOwnerDto } from "./dto/add-owner.dto";
 
 @Controller('processes')
 export class ProcessesController {
@@ -31,6 +32,14 @@ export class ProcessesController {
         @Body() dto: AddDocDto
     ) {
         return await this.processesService.addDoc(id, dto)
+    }
+
+    @Post(':id/owners')
+    async addOwner(
+        @Param('id') id: string,
+        @Body() dto: AddOwnerDto
+    ){
+        return await this.processesService.addOwner(id, dto)
     }
 
 }
