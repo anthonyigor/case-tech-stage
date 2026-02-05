@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AreasModule } from './modules/areas/areas.module';
 import { PrismaModule } from './infra/prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
+import { ProcessesModule } from './modules/processes/processes.module';
 
 @Module({
   imports: [
@@ -9,6 +10,7 @@ import { ConfigModule } from '@nestjs/config';
       isGlobal: true
     }),
     AreasModule,
+    ProcessesModule,
     PrismaModule
   ],
   controllers: [],

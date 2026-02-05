@@ -17,6 +17,12 @@ export class AreasRepositoryPrisma implements IAreasRepository {
         })
     }
     
+    async findById(id: string): Promise<Area | null> {
+        return await this.prisma.area.findUnique({
+            where: { id }
+        })
+    }
+
     async findByName(name: string): Promise<Area | null> {
         return await this.prisma.area.findFirst({
             where: {
