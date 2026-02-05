@@ -1,13 +1,13 @@
 import { Module } from "@nestjs/common";
 import { AreasController } from "./areas.controller";
-import { CreateAreaService } from "./services/create-area.service";
 import { IAreasRepository } from "./repositories/areas.repository";
-import { AreasRepositoryPrisma } from "./repositories/prisma/areas-repository.prisma";
+import { AreasRepositoryPrisma } from "./repositories/prisma/areas.prisma.repository";
+import { areaService } from "./services/area.service";
 
 @Module({
     controllers: [AreasController],
     providers: [
-        CreateAreaService,
+        areaService,
         { provide: IAreasRepository, useClass: AreasRepositoryPrisma }
     ]
 })

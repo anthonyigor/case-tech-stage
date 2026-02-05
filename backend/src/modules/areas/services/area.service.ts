@@ -3,10 +3,10 @@ import { IAreasRepository } from "../repositories/areas.repository";
 import { CreateAreaDto } from "../dto/create-area.dto";
 
 @Injectable()
-export class CreateAreaService {
+export class areaService {
     constructor(private readonly areasRepository: IAreasRepository) {}
 
-    async execute(dto: CreateAreaDto) {
+    async create(dto: CreateAreaDto) {
         const name = dto.name.trim()
         const areaExists = await this.areasRepository.findByName(name)
         
