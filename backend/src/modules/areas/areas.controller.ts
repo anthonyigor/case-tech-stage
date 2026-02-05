@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from "@nestjs/common";
+import { Body, Controller, Get, Post } from "@nestjs/common";
 import { CreateAreaDto } from "./dto/create-area.dto";
 import { areaService } from "./services/area.service";
 
@@ -19,4 +19,8 @@ export class AreasController {
         }
     }
 
+    @Get()
+    async getAreas() {
+        return await this.areaService.getAll()
+    }
 }

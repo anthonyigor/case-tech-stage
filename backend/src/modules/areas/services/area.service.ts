@@ -14,4 +14,9 @@ export class areaService {
 
         return await this.areasRepository.create(dto)
     }
+
+    async getAll() {
+        return await this.areasRepository.getAll()
+    }
+
 }
