@@ -4,6 +4,8 @@ import { CreateProcessDto } from "../dto/create-process.dto";
 import { ProcessStatus, ProcessType } from "generated/prisma/enums";
 import { IAreasRepository } from "src/modules/areas/repositories/areas.repository";
 import { FilteredProcess } from "../types";
+import { AddToolDto } from "../dto/add-tool.dto";
+import { IToolRepository } from "../repositories/tool.repository";
 
 
 type ProcessTreeNode = FilteredProcess & { children: ProcessTreeNode[] };
@@ -12,7 +14,8 @@ type ProcessTreeNode = FilteredProcess & { children: ProcessTreeNode[] };
 export class ProcessesService {
     constructor(
         private readonly processesRepository: IProcessesRepository,
-        private readonly areaRepository: IAreasRepository
+        private readonly areaRepository: IAreasRepository,
+        private readonly toolRepository: IToolRepository
     ) {}
 
     async create(dto: CreateProcessDto) {
@@ -86,6 +89,14 @@ export class ProcessesService {
         sort(roots)
 
         return roots
+    }
+
+    async addTool(process_id: string, dto: AddToolDto) {
+        const process = await this.processesRepository.findById(process_id)
+        if (!process) throw new NotFoundException('Processo não encontrado')
+
+        const newTool = await this.toolRepository.create(process_id, dto)
+        return newTool
     }
 
 }
