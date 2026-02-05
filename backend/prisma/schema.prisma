@@ -122,7 +122,7 @@ model ProcessOwner {
 
   created_at DateTime @default(now())
 
-  @@unique([process_id, people_id])
+  @@unique([process_id, people_id],name: "process_owner_process_people_unique" )
   @@index([process_id])
   @@index([people_id])
   @@map("process_owners")

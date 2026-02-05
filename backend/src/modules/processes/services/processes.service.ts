@@ -159,4 +159,16 @@ export class ProcessesService {
         
     }
 
+    async removeOwnerByPeople(process_id: string, people_id: string) {
+        const process = await this.processesRepository.findByIdwithDetails(process_id);
+        if (!process) throw new NotFoundException('Processo não encontrado');
+
+        const people = await this.peopleService.findById(people_id);
+        if (!people) throw new NotFoundException('Responsável não encontrado');
+
+        await this.ownerRepository.deleteByPeopleId(process_id, people_id);
+
+        return { ok: true };
+    }
+
 }

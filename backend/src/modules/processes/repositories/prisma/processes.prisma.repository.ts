@@ -16,7 +16,24 @@ export class ProcessesPrismaRepository implements IProcessesRepository {
     }
     
     async findById(id: string): Promise<Process | null> {
-        return this.prisma.process.findUnique({ where: { id } });
+        return await this.prisma.process.findUnique({ where: { id } });
+    }
+
+    async findByIdwithDetails(id: string): Promise<any> {
+        return await this.prisma.process.findUnique({
+            where: { id },
+            include: {
+                tools: true,
+                docs: true,
+                owners: {
+                    include: {
+                        people: {
+                            include: { team: true }
+                        }
+                    }
+                }
+            }
+        })
     }
     
     async findManyByArea(area_id: string): Promise<FilteredProcess[]> {
@@ -33,9 +50,9 @@ export class ProcessesPrismaRepository implements IProcessesRepository {
                 area_id: params.area_id,
                 parent_id: params.parent_id ?? null },
                 _max: { position: true },
-            });
+        });
 
-            return res._max.position ?? null;
-        }
+        return res._max.position ?? null;
+    }
 
 }

@@ -1,7 +1,7 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { IOwnerRepository } from "../owner.repository";
 import { PrismaService } from "src/infra/prisma/prisma.service";
-import { ProcessOwner } from "generated/prisma/client";
+import { Prisma, ProcessOwner } from "generated/prisma/client";
 import { AddOwnerDto } from "../../dto/add-owner.dto";
 
 @Injectable()
@@ -28,4 +28,23 @@ export class OwnerPrismaRepository implements IOwnerRepository {
             where: { process_id }
         })
     }
+    
+    async deleteByPeopleId(process_id: string, people_id: string): Promise<void> {
+        try {
+        await this.prisma.processOwner.delete({
+            where: {
+                process_owner_process_people_unique: {
+                    process_id,
+                    people_id,
+                },
+            },
+        });
+    } catch (e) {
+        if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2025') {
+            throw new BadRequestException('A pessoa informada não é responsável por esse processo');
+        }
+        throw e;
+    }
+    }
+    
 }

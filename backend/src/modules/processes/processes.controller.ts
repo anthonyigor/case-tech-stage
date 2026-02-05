@@ -58,4 +58,12 @@ export class ProcessesController {
         return await this.processesService.addOwner(id, dto)
     }
 
+    @Delete(':id/owners/:peopleId')
+    async removeOwner(
+        @Param('id') id: string,
+        @Param('peopleId') people_id: string
+    ) {
+        return await this.processesService.removeOwnerByPeople(id, people_id)
+    }
+
 }
