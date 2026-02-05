@@ -3,6 +3,7 @@ import { IProcessesRepository } from "../processes.repository";
 import { Process } from "generated/prisma/client";
 import { ProcessCreateInput } from "generated/prisma/models";
 import { PrismaService } from "src/infra/prisma/prisma.service";
+import { FilteredProcess } from "../../types";
 
 @Injectable()
 export class ProcessesPrismaRepository implements IProcessesRepository {
@@ -16,6 +17,14 @@ export class ProcessesPrismaRepository implements IProcessesRepository {
     
     async findById(id: string): Promise<Process | null> {
         return this.prisma.process.findUnique({ where: { id } });
+    }
+    
+    async findManyByArea(area_id: string): Promise<FilteredProcess[]> {
+        return await this.prisma.process.findMany({
+            where: { area_id },
+            orderBy: [{ parent_id: 'asc'}, {position: 'asc'}, {created_at: 'asc'}],
+            omit: { created_at: true, updated_at: true, area_id: true }
+        })
     }
     
     async getMaxPosition(params: { area_id: string; parent_id: string | null; }): Promise<number | null> {

@@ -7,6 +7,7 @@ import { IAreasRepository } from "../areas/repositories/areas.repository";
 import { AreasRepositoryPrisma } from "../areas/repositories/prisma/areas.prisma.repository";
 
 @Module({
+    exports: [ProcessesService],
     controllers: [ProcessesController],
     providers: [
         ProcessesService,
