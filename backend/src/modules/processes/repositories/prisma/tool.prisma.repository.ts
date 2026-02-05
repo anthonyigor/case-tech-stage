@@ -32,5 +32,11 @@ export class ToolPrismaRepository implements IToolRepository {
             }
         })
     }
-
+    
+    async deleteById(id: string): Promise<void> {
+        await this.prisma.processTool.delete({
+            where: { id }
+        })
+    }
+    
 }

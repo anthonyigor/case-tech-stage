@@ -7,4 +7,5 @@ export abstract class IDocsRepository {
     abstract create(process_id: string, data: AddDocDto): Promise<ProcessDoc>
     abstract findById(id: string): Promise<ProcessDoc | null>
     abstract findByProcess(process_id: string): Promise<ProcessDoc[]>
+    abstract deleteById(id: string): Promise<void>
 }

@@ -31,5 +31,11 @@ export class DocsPrismaRepository implements IDocsRepository {
             }
         })
     }
+    
+    async deleteById(id: string): Promise<void> {
+        await this.prisma.processDoc.delete({
+            where: { id }
+        })
+    }
 
 }

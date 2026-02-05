@@ -107,12 +107,38 @@ export class ProcessesService {
         return newTool
     }
 
+    async removeTool(process_id: string, tool_id: string) {
+        const tool = await this.toolRepository.findById(tool_id)
+        if (!tool) throw new NotFoundException('Tool não encontrada')
+
+        if (tool.process_id !== process_id) throw new BadRequestException('A tool informada não pertence a esse processo')
+
+        await this.toolRepository.deleteById(tool_id)
+
+        return {
+            ok: true
+        }
+    }
+
     async addDoc(process_id: string, dto: AddDocDto) {
         const process = await this.processesRepository.findById(process_id)
         if (!process) throw new NotFoundException('Processo não encontrado')
 
         const newDoc = await this.docsRepository.create(process_id, dto)
         return newDoc
+    }
+
+    async removeDoc(process_id: string, doc_id: string) {
+        const doc = await this.docsRepository.findById(doc_id)
+        if (!doc) throw new NotFoundException('Documento não encontrado')
+
+        if (doc.process_id !== process_id) throw new BadRequestException('O documento informado não pertence a esse processo')
+
+        await this.docsRepository.deleteById(doc_id)
+
+        return {
+            ok: true
+        }
     }
 
     async addOwner(process_id: string, dto: AddOwnerDto) {

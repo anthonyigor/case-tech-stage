@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Param, Post } from "@nestjs/common";
 import { CreateProcessDto } from "./dto/create-process.dto";
 import { ProcessesService } from "./services/processes.service";
 import { AddToolDto } from "./dto/add-tool.dto";
@@ -26,12 +26,28 @@ export class ProcessesController {
         return await this.processesService.addTool(id, dto)
     }
 
+    @Delete(':id/tools/:toolId')
+    async removeTool(
+        @Param('id') id: string,
+        @Param('toolId') tool_id: string
+    ) {
+        return await this.processesService.removeTool(id, tool_id)
+    }
+
     @Post(':id/docs')
     async addDoc(
         @Param('id') id: string,
         @Body() dto: AddDocDto
     ) {
         return await this.processesService.addDoc(id, dto)
+    }
+
+    @Delete(':id/docs/:docId')
+    async removeDoc(
+        @Param('id') id: string,
+        @Param('docId') doc_id: string
+    ) {
+        return await this.processesService.removeDoc(id, doc_id)
     }
 
     @Post(':id/owners')
