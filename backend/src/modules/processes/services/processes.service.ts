@@ -12,6 +12,8 @@ import { PeopleService } from "src/modules/people/services/people.service";
 import { AddOwnerDto } from "../dto/add-owner.dto";
 import { IOwnerRepository } from "../repositories/owner.repository";
 import { Prisma } from "generated/prisma/client";
+import { MoveProcessDto } from "../dto/move-process.dto";
+import { PrismaService } from "src/infra/prisma/prisma.service";
 
 
 type ProcessTreeNode = FilteredProcess & { children: ProcessTreeNode[] };
@@ -24,7 +26,8 @@ export class ProcessesService {
         private readonly toolRepository: IToolRepository,
         private readonly docsRepository: IDocsRepository,
         private readonly peopleService: PeopleService,
-        private readonly ownerRepository: IOwnerRepository
+        private readonly ownerRepository: IOwnerRepository,
+        private readonly prisma: PrismaService
     ) {}
 
     async create(dto: CreateProcessDto) {
@@ -105,6 +108,110 @@ export class ProcessesService {
         if (!process) throw new NotFoundException('Processo não encontrado')
 
         return process
+    }
+
+    async moveProcess(process_id: string, dto: MoveProcessDto) {
+        const process = await this.processesRepository.findById(process_id)
+        if (!process) throw new NotFoundException('Processo não encontrado')
+
+        // parent_id: undefined = não altera pai (só reordenar); null = vira raiz; uuid = mover para esse pai
+        const newParentId = dto.parent_id === undefined ? process.parent_id : dto.parent_id
+
+        // se o parente for o mesmo processo, não permitir
+        if (newParentId === process.id) throw new BadRequestException('Um processo não pode ser seu próprio processo pai')
+
+        // validar novo pai
+        if (newParentId) {
+            const parent = await this.processesRepository.findById(newParentId)
+            if (!parent) throw new NotFoundException('Processo pai não encontrado')
+
+            if (parent.area_id !== process.area_id) throw new BadRequestException('Processo pai precisa pertencer a mesma área')
+            
+            // evitar ciclo
+            let cursorId: string | null = parent.parent_id
+            while(cursorId) {
+                if (cursorId === process_id) {
+                    throw new BadRequestException('Não é permitir mover um processo para abaixo do seu próprio descendente')
+                }
+
+                const cursor = await this.processesRepository.findById(cursorId)
+                cursorId = cursor?.parent_id ?? null
+            }
+        }
+
+        return await this.prisma.$transaction(async (tx) => {
+            const areaId = process.area_id
+            const oldParentId = process.parent_id
+            const targetParentId = newParentId
+
+            // buscar processos filhos do atual processo pai
+            const oldLinkedProcesses = await tx.process.findMany({
+                where: {
+                    area_id: areaId,
+                    parent_id: oldParentId
+                },
+                orderBy: { position: 'asc' },
+                select: { id: true, position: true}
+            })
+
+            // remover próprio nó da lista
+            const oldList = oldLinkedProcesses.filter(p => p.id !== process_id).map(p => p.id)
+
+            // buscar processos filhos do novo processo pai (caso mude)
+            let newList: string[]
+            if (targetParentId === oldParentId) {
+                newList = [...oldList]
+            } else {
+                const newLinkedProcess = await tx.process.findMany({
+                    where: {
+                        area_id: areaId,
+                        parent_id: newParentId
+                    },
+                    orderBy: { position: 'asc' },
+                    select: { id: true, position: true }
+                })
+                newList = newLinkedProcess.map(p => p.id)
+            }
+
+            // inserir nó na posiçao informada
+            const clampedPos = Math.max(0, Math.min(dto.position, newList.length))
+            newList.splice(clampedPos, 0, process_id)
+
+            // atualiza o próprio nó
+            await tx.process.update({
+                where: { id: process_id },
+                data: {
+                    parent_id: targetParentId,
+                    position: clampedPos
+                }
+            })
+
+            // atualizar posições dos processo filhos do antigo pai (se mudou)
+            if (targetParentId !== oldParentId) {
+                for (let i = 0; i < oldList.length; i++) {
+                    await tx.process.update({
+                        where: { id: oldList[i] },
+                        data: { position: i }
+                    })
+                }
+            }
+
+            // atualizar posições dos processos filhos do novo pai
+            for (let i = 0; i < newList.length; i++) {
+                const id = newList[i]
+                // evita update redundante do próprio nó 
+                if (id === process_id && i === clampedPos) continue
+
+                await tx.process.update({
+                    where: { id },
+                    data: { position: i }
+                })
+            }
+
+            // retorna processo atualizado
+            return tx.process.findUnique({ where: { id: process_id } })
+        })
+
     }
 
     async addTool(process_id: string, dto: AddToolDto) {
