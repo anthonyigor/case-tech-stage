@@ -100,6 +100,13 @@ export class ProcessesService {
         return roots
     }
 
+    async getById(process_id: string) {
+        const process = await this.processesRepository.findByIdwithDetails(process_id)
+        if (!process) throw new NotFoundException('Processo não encontrado')
+
+        return process
+    }
+
     async addTool(process_id: string, dto: AddToolDto) {
         const process = await this.processesRepository.findById(process_id)
         if (!process) throw new NotFoundException('Processo não encontrado')

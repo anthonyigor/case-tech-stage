@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Param, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post } from "@nestjs/common";
 import { CreateProcessDto } from "./dto/create-process.dto";
 import { ProcessesService } from "./services/processes.service";
 import { AddToolDto } from "./dto/add-tool.dto";
@@ -16,6 +16,13 @@ export class ProcessesController {
         @Body() dto: CreateProcessDto
     ) {
         return await this.processesService.create(dto)
+    }
+
+    @Get(':id')
+    async getProcess(
+        @Param('id') id: string
+    ) {
+        return await this.processesService.getById(id)
     }
 
     @Post(':id/tools')
