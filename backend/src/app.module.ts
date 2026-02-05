@@ -3,6 +3,7 @@ import { AreasModule } from './modules/areas/areas.module';
 import { PrismaModule } from './infra/prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { ProcessesModule } from './modules/processes/processes.module';
+import { PeopleModule } from './modules/people/people.module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { ProcessesModule } from './modules/processes/processes.module';
     }),
     AreasModule,
     ProcessesModule,
+    PeopleModule,
     PrismaModule
   ],
   controllers: [],
