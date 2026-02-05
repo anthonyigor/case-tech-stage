@@ -6,6 +6,8 @@ import { IAreasRepository } from "src/modules/areas/repositories/areas.repositor
 import { FilteredProcess } from "../types";
 import { AddToolDto } from "../dto/add-tool.dto";
 import { IToolRepository } from "../repositories/tool.repository";
+import { IDocsRepository } from "../repositories/docs.repository";
+import { AddDocDto } from "../dto/add-doc.dto";
 
 
 type ProcessTreeNode = FilteredProcess & { children: ProcessTreeNode[] };
@@ -15,7 +17,8 @@ export class ProcessesService {
     constructor(
         private readonly processesRepository: IProcessesRepository,
         private readonly areaRepository: IAreasRepository,
-        private readonly toolRepository: IToolRepository
+        private readonly toolRepository: IToolRepository,
+        private readonly docsRepository: IDocsRepository
     ) {}
 
     async create(dto: CreateProcessDto) {
@@ -94,9 +97,16 @@ export class ProcessesService {
     async addTool(process_id: string, dto: AddToolDto) {
         const process = await this.processesRepository.findById(process_id)
         if (!process) throw new NotFoundException('Processo não encontrado')
-
         const newTool = await this.toolRepository.create(process_id, dto)
         return newTool
+    }
+
+    async addDoc(process_id: string, dto: AddDocDto) {
+        const process = await this.processesRepository.findById(process_id)
+        if (!process) throw new NotFoundException('Processo não encontrado')
+
+        const newDoc = await this.docsRepository.create(process_id, dto)
+        return newDoc
     }
 
 }
