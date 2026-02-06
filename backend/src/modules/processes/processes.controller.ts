@@ -5,6 +5,7 @@ import { AddToolDto } from "./dto/add-tool.dto";
 import { AddDocDto } from "./dto/add-doc.dto";
 import { AddOwnerDto } from "./dto/add-owner.dto";
 import { MoveProcessDto } from "./dto/move-process.dto";
+import { UpdateProcessStatusDto } from "./dto/update-process-status.dto";
 
 @Controller('processes')
 export class ProcessesController {
@@ -32,6 +33,14 @@ export class ProcessesController {
         @Body() dto: MoveProcessDto
     ) {
         return await this.processesService.moveProcess(id, dto)
+    }
+
+    @Patch(':id/status')
+    async updateStatusProcess(
+        @Param('id') id: string,
+        @Body() dto: UpdateProcessStatusDto
+    ) {
+        return await this.processesService.updateStatus(id, dto)
     }
 
     @Post(':id/tools')

@@ -4,6 +4,7 @@ import { Process } from "generated/prisma/client";
 import { ProcessCreateInput } from "generated/prisma/models";
 import { PrismaService } from "src/infra/prisma/prisma.service";
 import { FilteredProcess } from "../../types";
+import { UpdateProcessStatusDto } from "../../dto/update-process-status.dto";
 
 @Injectable()
 export class ProcessesPrismaRepository implements IProcessesRepository {
@@ -54,5 +55,11 @@ export class ProcessesPrismaRepository implements IProcessesRepository {
 
         return res._max.position ?? null;
     }
-
+    
+    async updateStatusProcess(process_id: string, data: UpdateProcessStatusDto): Promise<void> {
+        await this.prisma.process.update({
+            where: { id: process_id },
+            data: { status: data.status }
+        })
+    }
 }

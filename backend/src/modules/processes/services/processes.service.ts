@@ -14,6 +14,7 @@ import { IOwnerRepository } from "../repositories/owner.repository";
 import { Prisma } from "generated/prisma/client";
 import { MoveProcessDto } from "../dto/move-process.dto";
 import { PrismaService } from "src/infra/prisma/prisma.service";
+import { UpdateProcessStatusDto } from "../dto/update-process-status.dto";
 
 
 type ProcessTreeNode = FilteredProcess & { children: ProcessTreeNode[] };
@@ -212,6 +213,17 @@ export class ProcessesService {
             return tx.process.findUnique({ where: { id: process_id } })
         })
 
+    }
+
+    async updateStatus(process_id: string, dto: UpdateProcessStatusDto) {
+        const process = await this.processesRepository.findById(process_id)
+        if (!process) throw new NotFoundException('Processo não encontrado')
+
+        await this.processesRepository.updateStatusProcess(process_id, dto)
+        
+        return {
+            ok: true
+        }
     }
 
     async addTool(process_id: string, dto: AddToolDto) {
