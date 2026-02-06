@@ -43,6 +43,14 @@ export class ProcessesController {
         return await this.processesService.updateStatus(id, dto)
     }
 
+    @Delete(':id')
+    async deleteProcess(
+        @Param('id') id: string
+    ) {
+        return await this.processesService.deleteProcess(id)
+    }
+
+    // ----- TOOLS, OWNERS E DOCS -----
     @Post(':id/tools')
     async addTool(
         @Param('id') id: string,

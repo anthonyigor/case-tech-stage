@@ -226,6 +226,19 @@ export class ProcessesService {
         }
     }
 
+    async deleteProcess(process_id: string) {
+        const process = await this.processesRepository.findById(process_id)
+        if (!process) throw new NotFoundException('Processo não encontrado')
+
+        const hasChildren = await this.processesRepository.hasChildren(process_id)
+        if (hasChildren) throw new BadRequestException('Não é possível deletar um processo com subprocessos conectados. Delete ou mova o subprocesso primeiro.')
+        
+        await this.processesRepository.deleteProcess(process_id)
+        return {
+            ok: true
+        }
+    }
+
     async addTool(process_id: string, dto: AddToolDto) {
         const process = await this.processesRepository.findById(process_id)
         if (!process) throw new NotFoundException('Processo não encontrado')

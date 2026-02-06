@@ -19,7 +19,7 @@ export class ProcessesPrismaRepository implements IProcessesRepository {
     async findById(id: string): Promise<Process | null> {
         return await this.prisma.process.findUnique({ where: { id } });
     }
-
+    
     async findByIdwithDetails(id: string): Promise<any> {
         return await this.prisma.process.findUnique({
             where: { id },
@@ -60,6 +60,20 @@ export class ProcessesPrismaRepository implements IProcessesRepository {
         await this.prisma.process.update({
             where: { id: process_id },
             data: { status: data.status }
+        })
+    }
+    
+    async hasChildren(id: string): Promise<boolean> {
+        const count = await this.prisma.process.count({
+            where: { parent_id: id },
+        });
+        
+        return count > 0;
+    }
+    
+    async deleteProcess(process_id: string): Promise<void> {
+        await this.prisma.process.delete({
+            where: { id: process_id }
         })
     }
 }

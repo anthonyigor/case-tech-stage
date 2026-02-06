@@ -10,5 +10,7 @@ export abstract class IProcessesRepository {
     abstract findByIdwithDetails(id: string): Promise<any>
     abstract getMaxPosition(params: { area_id: string, parent_id: string | null }): Promise<number | null>
     abstract findManyByArea(area_id: string): Promise<FilteredProcess[]>;
-    abstract updateStatusProcess(process_id: string, data: UpdateProcessStatusDto): Promise<void>
+    abstract updateStatusProcess(id: string, data: UpdateProcessStatusDto): Promise<void>
+    abstract hasChildren(id: string): Promise<boolean>
+    abstract deleteProcess(id: string): Promise<void>
 }
