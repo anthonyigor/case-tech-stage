@@ -4,15 +4,16 @@ import { createArea, type Area } from "../api/areas";
 import { AreaModal } from "../components/modals/AreaModal";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 const glass = "rounded-2xl bg-white/2 ring-1 ring-white/10 backdrop-blur-xl";
 
-export function AreasPage({ onSelectArea }: { onSelectArea?: (id: string) => void }) {
+export function AreasPage() {
     const qc = useQueryClient()
     const [openModal, setOpenModal] = useState<boolean>(false)
     const [editing, setEditing] = useState<Area | null>(null)
-    
-    
+    const nav = useNavigate()
+
     function openCreate() {
         setEditing(null);
         setOpenModal(true);
@@ -88,7 +89,6 @@ export function AreasPage({ onSelectArea }: { onSelectArea?: (id: string) => voi
                 className="group rounded-2xl bg-white/5 ring-1 ring-white/10 p-4 hover:bg-white/10 transition"
               >
                 <button
-                  onClick={() => onSelectArea?.(a.id)}
                   className="w-full text-left"
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -97,6 +97,12 @@ export function AreasPage({ onSelectArea }: { onSelectArea?: (id: string) => voi
                       <div className="mt-1 line-clamp-2 text-sm text-slate-300">
                         {a.description || "Sem descrição"}
                       </div>
+                    </div>
+                    <div 
+                      onClick={() => nav(`/areas/${a.id}/processos`)}
+                      className="shrink-0 rounded-xl bg-white/5 ring-1 ring-white/10 px-3 py-1 text-xs text-slate-300"
+                    >
+                      Abrir processos
                     </div>
                   </div>
                 </button>

@@ -1,6 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import { Layout } from "../components/layout/Layout";
 import { AreasPage } from "../pages/AreasPage";
+import { ProcessTreePage } from "../pages/ProcessTree";
 
 export const router = createBrowserRouter([
   {
@@ -14,8 +15,7 @@ export const router = createBrowserRouter([
         path: "/areas",
         element: <AreasPage />,
       },
-      // depois:
-      // { path: "/areas/:id/processos", element: <ProcessTreePage /> },
+      { path: "/areas/:areaId/processos", element: <ProcessTreePage /> },
     ],
   },
 ]);
