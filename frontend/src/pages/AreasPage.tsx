@@ -3,6 +3,7 @@ import { useAreas } from "../hooks/useAreas";
 import { createArea, type Area } from "../api/areas";
 import { AreaModal } from "../components/modals/AreaModal";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
 const glass = "rounded-2xl bg-white/2 ring-1 ring-white/10 backdrop-blur-xl";
 
@@ -11,17 +12,19 @@ export function AreasPage({ onSelectArea }: { onSelectArea?: (id: string) => voi
     const [openModal, setOpenModal] = useState<boolean>(false)
     const [editing, setEditing] = useState<Area | null>(null)
     
-    const { data, isLoading, isError, error } = useAreas()
-
-    const createAreaMut = useMutation({
-        mutationFn: createArea,
-        onSuccess: () => qc.invalidateQueries({ queryKey: ['areas'] })
-    })
-
+    
     function openCreate() {
         setEditing(null);
         setOpenModal(true);
     }
+    
+    const { data, isLoading, isError, error } = useAreas()
+    
+    const createAreaMut = useMutation({
+        mutationFn: createArea,
+        onSuccess: () => qc.invalidateQueries({ queryKey: ['areas'] }),
+        onError: (err: any) => toast.error(err.response.data.message)
+    })
 
     async function onSubmit(form: { name: string, description?: string }) {
         await createAreaMut.mutateAsync(form)
