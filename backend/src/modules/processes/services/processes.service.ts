@@ -219,11 +219,55 @@ export class ProcessesService {
         const process = await this.processesRepository.findById(process_id)
         if (!process) throw new NotFoundException('Processo não encontrado')
 
-        await this.processesRepository.updateStatusProcess(process_id, dto)
-        
-        return {
-            ok: true
+        // se não for processo root, atualizar apenas ele
+        if (process.parent_id) {
+            await this.processesRepository.updateStatusProcess(process_id, dto)
+            
+            return {
+                ok: true
+            }
         }
+
+        // se for root, aplicar novo status a todos os subprocessos
+        const processByArea = await this.processesRepository.findManyByArea(process.area_id)
+        const childrenByParent = new Map<string, string[]>()
+        for (const p of processByArea) {
+            if (!p.parent_id) continue
+            const arr = childrenByParent.get(p.parent_id) ?? []
+            arr.push(p.id)
+            childrenByParent.set(p.parent_id, arr)
+        }
+
+        const idsToUpdate: string[] = []
+        const stack = [process_id]
+
+        while(stack.length) {
+            const current = stack.pop()
+            idsToUpdate.push(current)
+
+            const children = childrenByParent.get(current) ?? []
+            for (const c of children) stack.push(c)
+        }
+
+        // transaction para atualizar o processo/subprocessos filhos
+        const result = await this.prisma.$transaction(async (tx) => {
+            const updated = await tx.process.updateMany({
+                where: { id: { in: idsToUpdate } },
+                data: {
+                    status: dto.status
+                }
+            })
+
+            return {
+                updatedCount: updated.count
+            }
+        })
+
+        return {
+            ok: true,
+            count: result.updatedCount
+        } 
+        
     }
 
     async deleteProcess(process_id: string) {
