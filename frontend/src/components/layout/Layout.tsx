@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Sidebar } from "./Sidebar";
 import { TiThMenu } from "react-icons/ti";
-import { AreasPage } from "../../pages/AreasPage";
+import { Outlet } from "react-router-dom";
 
 export function Layout() {
     const [mobileOpen, setMobileOpen] = useState<boolean>(false)
@@ -40,7 +40,7 @@ export function Layout() {
 
                         {/* Content placeholder */}
                         <div className="flex-1 rounded-2xl bg-white/5 ring-1 ring-white/10 backdrop-blur-xl p-6">
-                            <AreasPage onSelectArea={(id) => console.log("abrir area", id)} />
+                            <Outlet />
                         </div>
                     </div>
             </div>

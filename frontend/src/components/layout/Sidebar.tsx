@@ -1,4 +1,4 @@
-import { FaFolderPlus, FaHome, FaUserAlt, FaUsers } from "react-icons/fa"
+import { FaFolderPlus, FaUserAlt, FaUsers } from "react-icons/fa"
 import { SidebarItem } from "./SidebarItem"
 import { TiThMenu } from "react-icons/ti"
 
@@ -11,10 +11,9 @@ type SidebarProps = {
 }
 
 const nav = [
-    { label: "Dashboard", icon: <FaHome className="w-6"/> },
-    { label: "Areas", icon: <FaFolderPlus className="w-6" /> },
-    { label: "Pessoas", icon: <FaUserAlt className="w-6"/>},
-    { label: "Times", icon: <FaUsers className="w-6"/> }
+    { label: "Areas", icon: <FaFolderPlus className="w-6" />, to: '/areas' },
+    { label: "Pessoas", icon: <FaUserAlt className="w-6"/>, to: '/people'},
+    { label: "Times", icon: <FaUsers className="w-6"/>, to: '/teams' }
 ]
 
 export function Sidebar({
@@ -53,11 +52,11 @@ export function Sidebar({
                 <nav className="space-y-1">
                     {nav.map((item) => (
                         <SidebarItem
-                            key={item.label}
+                            key={item.to}
                             label={item.label}
                             icon={item.icon}
+                            to={item.to}
                             collapsed={collapsed}
-                            active={item.label === "Classes"}
                         />
                     ))}
                 </nav>
@@ -85,11 +84,11 @@ export function Sidebar({
                     <nav className="space-y-1">
                         {nav.map((item) => (
                         <SidebarItem
-                            key={item.label}
+                            key={item.to}
                             label={item.label}
                             icon={item.icon}
                             collapsed={false}
-                            active={item.label === "Classes"}
+                            to={item.to}
                         />
                         ))}
                     </nav>
