@@ -1,7 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import { Layout } from "../components/layout/Layout";
 import { AreasPage } from "../pages/AreasPage";
-import { ProcessTreePage } from "../pages/ProcessTree";
+import { ProcessTreePage } from "../pages/ProcessTreePage";
 
 export const router = createBrowserRouter([
   {
