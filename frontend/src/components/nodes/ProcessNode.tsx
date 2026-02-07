@@ -73,7 +73,7 @@ export function ProcessNode({ data }: any) {
 
           {open && (
             <div
-              className="absolute right-0 mt-2 w-[150px] rounded-xl bg-slate-950/90 ring-1 ring-white/10 backdrop-blur-xl p-2 shadow-xl"
+              className="absolute right-0 mt-2 w-37.5 rounded-xl bg-slate-950/90 ring-1 ring-white/10 backdrop-blur-xl p-2 shadow-xl"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="px-2 pb-2 text-[11px] text-slate-400">Status</div>

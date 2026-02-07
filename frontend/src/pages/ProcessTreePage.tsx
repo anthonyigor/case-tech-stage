@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useMemo, useState } from "react";
 import { buildGraphFromTree } from "../utils/buildGraph";
-import { Background, Controls, ReactFlow } from "@xyflow/react";
+import { Controls, ReactFlow } from "@xyflow/react";
 import { ProcessNode } from "../components/nodes/ProcessNode";
 import "@xyflow/react/dist/style.css";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -142,19 +142,18 @@ export function ProcessTreePage() {
                 setDrawerOpen(false);
             }}
           >
-            <Background />
-            <Controls />
+            <Controls className="text-black"/>
           </ReactFlow>
         )}
       </div>
 
+        {/* Drawer de detalhes do processo */}
         <ProcessDrawer
             open={drawerOpen}
             processId={selectedProcessId}
             areaId={areaId}
             onClose={() => setDrawerOpen(false)}
          />
-
 
       {/* Modal */}
       {areaId && (
