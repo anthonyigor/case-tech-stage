@@ -89,11 +89,9 @@ export function updateProcess(
     description?: string;
     type?: ProcessType;
     status?: ProcessStatus;
-    position?: number;
-    parent_id?: string | null;
   }>
 ) {
-  return api.patch(`/processes/${id}`, payload)
+  return api.patch(`/processes/${id}/details`, payload)
 }
 
 export async function addTool(process_id: string, payload: { name: string; type?: ToolType; url?: string }) {

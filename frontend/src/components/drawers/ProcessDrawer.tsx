@@ -46,6 +46,7 @@ export function ProcessDrawer({ open, processId, areaId, onClose }: Props) {
     mutationFn: ({ id, payload }: { id: string; payload: any }) => updateProcess(id, payload),
     onSuccess: async (_, vars) => {
       await qc.invalidateQueries({ queryKey: ["process", vars.id] });
+      toast.success("Processo atualizado com sucesso!");
       await refreshTree();
     },
     onError: (err: any) => toast.error(`Erro ao salvar processo: ${err.response.data.message}`)
@@ -56,6 +57,7 @@ export function ProcessDrawer({ open, processId, areaId, onClose }: Props) {
       addTool(id, payload),
     onSuccess: async (_, vars) => {
       await qc.invalidateQueries({ queryKey: ["process", vars.id] });
+      toast.success("Ferramenta adicionada com sucesso!");
     },
     onError: (err: any) => toast.error(`Erro ao adicionar ferramenta: ${err.response.data.message}`)
   });
@@ -64,6 +66,7 @@ export function ProcessDrawer({ open, processId, areaId, onClose }: Props) {
     mutationFn: ({ id, payload }: { id: string; payload: { people_id: string } }) => addOwner(id, payload),
     onSuccess: async (_, vars) => {
       await qc.invalidateQueries({ queryKey: ["process", vars.id] });
+      toast.success("Responsável adicionado com sucesso!");
     },
     onError: (err: any) => toast.error(`Erro ao adicionar responsável: ${err.response.data.message}`)
   });
@@ -72,6 +75,7 @@ export function ProcessDrawer({ open, processId, areaId, onClose }: Props) {
     mutationFn: ({ id, payload }: { id: string; payload: { title: string; url: string } }) => addDoc(id, payload),
     onSuccess: async (_, vars) => {
       await qc.invalidateQueries({ queryKey: ["process", vars.id] });
+      toast.success("Documento adicionado com sucesso!");
     },
     onError: (err: any) => toast.error(`Erro ao adicionar documento: ${err.response.data.message}`)
   });

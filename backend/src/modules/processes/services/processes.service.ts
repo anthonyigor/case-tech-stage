@@ -15,6 +15,7 @@ import { Prisma } from "generated/prisma/client";
 import { MoveProcessDto } from "../dto/move-process.dto";
 import { PrismaService } from "src/infra/prisma/prisma.service";
 import { UpdateProcessStatusDto } from "../dto/update-process-status.dto";
+import { UpdateProcessDetailsDto } from "../dto/update-process-details.dto";
 
 
 type ProcessTreeNode = FilteredProcess & { children: ProcessTreeNode[] };
@@ -268,6 +269,23 @@ export class ProcessesService {
             count: result.updatedCount
         } 
         
+    }
+
+    async updateDetails(process_id: string, dto: UpdateProcessDetailsDto) {
+        const process = await this.processesRepository.findById(process_id)
+        if (!process) throw new NotFoundException('Processo não encontrado')
+
+        // atualizar status
+        if (dto.status) {
+            await this.updateStatus(process_id, { status: dto.status })
+        }
+
+        // atualizar outros detalhes
+        await this.processesRepository.updateDetails(
+            process_id, 
+            { title: dto.title, description: dto.description, type: dto.type }
+        )
+
     }
 
     async deleteProcess(process_id: string) {

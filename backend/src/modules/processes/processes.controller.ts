@@ -6,6 +6,7 @@ import { AddDocDto } from "./dto/add-doc.dto";
 import { AddOwnerDto } from "./dto/add-owner.dto";
 import { MoveProcessDto } from "./dto/move-process.dto";
 import { UpdateProcessStatusDto } from "./dto/update-process-status.dto";
+import { UpdateProcessDetailsDto } from "./dto/update-process-details.dto";
 
 @Controller('processes')
 export class ProcessesController {
@@ -25,6 +26,14 @@ export class ProcessesController {
         @Param('id') id: string
     ) {
         return await this.processesService.getById(id)
+    }
+
+    @Patch(':id/details')
+    async updateProcessDetails(
+        @Param('id') id: string,
+        @Body() dto: UpdateProcessDetailsDto
+    ) {
+        return await this.processesService.updateDetails(id, dto)
     }
 
     @Patch(':id/move')

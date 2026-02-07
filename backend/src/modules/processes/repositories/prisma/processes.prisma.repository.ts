@@ -5,6 +5,7 @@ import { ProcessCreateInput } from "generated/prisma/models";
 import { PrismaService } from "src/infra/prisma/prisma.service";
 import { FilteredProcess } from "../../types";
 import { UpdateProcessStatusDto } from "../../dto/update-process-status.dto";
+import { UpdateProcessDetailsDto } from "../../dto/update-process-details.dto";
 
 @Injectable()
 export class ProcessesPrismaRepository implements IProcessesRepository {
@@ -51,21 +52,32 @@ export class ProcessesPrismaRepository implements IProcessesRepository {
                 area_id: params.area_id,
                 parent_id: params.parent_id ?? null },
                 _max: { position: true },
-        });
+            });
+            
+            return res._max.position ?? null;
+        }
+        
+        async updateStatusProcess(process_id: string, data: UpdateProcessStatusDto): Promise<void> {
+            await this.prisma.process.update({
+                where: { id: process_id },
+                data: { status: data.status }
+            })
+        }
+        
+        async updateDetails(id: string, data: Partial<UpdateProcessDetailsDto>): Promise<void> {
+            await this.prisma.process.update({
+                where: { id },
+                data: {
+                    title: data.title,
+                    description: data.description,
+                    type: data.type,
+                }
+            })
+        }
 
-        return res._max.position ?? null;
-    }
-    
-    async updateStatusProcess(process_id: string, data: UpdateProcessStatusDto): Promise<void> {
-        await this.prisma.process.update({
-            where: { id: process_id },
-            data: { status: data.status }
-        })
-    }
-    
-    async hasChildren(id: string): Promise<boolean> {
-        const count = await this.prisma.process.count({
-            where: { parent_id: id },
+        async hasChildren(id: string): Promise<boolean> {
+            const count = await this.prisma.process.count({
+                where: { parent_id: id },
         });
         
         return count > 0;
