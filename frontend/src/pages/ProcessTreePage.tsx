@@ -2,12 +2,13 @@ import { useParams } from "react-router-dom";
 import { useMemo, useState } from "react";
 import { buildGraphFromTree } from "../utils/buildGraph";
 import { Background, Controls, ReactFlow } from "@xyflow/react";
-import { ProcessNode } from "../components/processes/ProcessNode";
+import { ProcessNode } from "../components/nodes/ProcessNode";
 import "@xyflow/react/dist/style.css";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createProcess, getProcessesTree, type CreateProcessDto } from "../api/processes";
 import { layoutWithDagre } from "../utils/dagreLayout";
 import { CreateProcessModal } from "../components/modals/CreateProcessModal";
+import { ProcessDrawer } from "../components/drawers/ProcessDrawer";
 
 const glass = "rounded-2xl bg-white/5 ring-1 ring-white/10 backdrop-blur-xl";
 const nodeTypes = {
@@ -17,7 +18,8 @@ const nodeTypes = {
 export function ProcessTreePage() {
     const { areaId } = useParams()
     const qc = useQueryClient()
-    const [selectedId, setSelectedId] = useState<string | null>(null)
+    const [drawerOpen, setDrawerOpen] = useState(false);
+    const [selectedProcessId, setSelectedProcessId] = useState<string | null>(null);
     const [createModalOpen, setCreateModalOpen] = useState<boolean>(false)
     const [createParentId, setCreateParentId] = useState<string | null>(null)
 
@@ -45,7 +47,6 @@ export function ProcessTreePage() {
             data: {
                 ...n.data,
                 onAddChild: (parentId: string) => {
-                    setSelectedId(parentId);
                     setCreateParentId(parentId);
                     setCreateModalOpen(true);
                 },
@@ -100,14 +101,28 @@ export function ProcessTreePage() {
             fitViewOptions={{ padding: 0.3 }}
             defaultEdgeOptions={{ type: "smoothstep" }}
             className="h-full"
-            onNodeClick={(_, node) => setSelectedId(node.id)}
-            onPaneClick={() => setSelectedId(null)}
+            onNodeClick={(_, node) => {
+                setSelectedProcessId(node.id);
+                setDrawerOpen(true);
+            }}
+            onPaneClick={() => {
+                setSelectedProcessId(null);
+                setDrawerOpen(false);
+            }}
           >
             <Background />
             <Controls />
           </ReactFlow>
         )}
       </div>
+
+        <ProcessDrawer
+            open={drawerOpen}
+            processId={selectedProcessId}
+            areaId={areaId}
+            onClose={() => setDrawerOpen(false)}
+         />
+
 
       {/* Modal */}
       {areaId && (
