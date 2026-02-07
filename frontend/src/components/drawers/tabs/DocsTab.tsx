@@ -6,10 +6,12 @@ export function DocsTab({
   data,
   saving,
   onAdd,
+  onRemove
 }: {
   data: ProcessDetail;
   saving: boolean;
   onAdd: (payload: { title: string; url: string }) => void;
+  onRemove: (doc_id: string) => void;
 }) {
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");
@@ -47,16 +49,28 @@ export function DocsTab({
             <div className="text-sm text-slate-300">Nenhum documento.</div>
           ) : (
             data.docs.map((d: any) => (
+              <div key={d.id} className="flex items-start justify-between gap-3 rounded-xl bg-white/5 ring-1 ring-white/10 p-3">
               <a
-                key={d.id}
                 href={d.url}
                 target="_blank"
                 rel="noreferrer"
-                className="block rounded-xl bg-white/5 ring-1 ring-white/10 p-3 hover:bg-white/10"
+                className="min-w-0 flex-1 hover:underline"
               >
                 <div className="font-medium text-slate-50">{d.title}</div>
                 <div className="text-xs text-slate-300 break-all">{d.url}</div>
               </a>
+
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (confirm(`Remover o documento "${d.title}"?`)) onRemove(d.id);
+                }}
+                className="shrink-0 rounded-xl bg-red-500/15 px-3 py-2 text-xs ring-1 ring-red-500/30 hover:bg-red-500/20 disabled:opacity-50"
+              >
+                Remover
+              </button>
+            </div>
             ))
           )}
         </div>

@@ -12,7 +12,7 @@ export type ProcessTreeItem = {
 };
 
 export type ProcessType = "MANUAL" | "SYSTEM";
-export type ProcessStatus = "ACTIVE" | "DRAFT" | "INACTIVE";
+export type ProcessStatus = "ACTIVE" | "DRAFT" | "DEPRECATED";
 
 export type CreateProcessDto = {
   area_id: string;
@@ -94,9 +94,17 @@ export function updateProcess(
   return api.patch(`/processes/${id}/details`, payload)
 }
 
+export function updateProcessStatus(id: string, status: ProcessStatus) {
+  return api.patch(`/processes/${id}/status`, { status })
+}
+
 export async function addTool(process_id: string, payload: { name: string; type?: ToolType; url?: string }) {
   const { data } = await api.post(`/processes/${process_id}/tools`, payload)
   return data
+}
+
+export async function removeTool(process_id: string, tool_id: string) {
+  return await api.delete(`/processes/${process_id}/tools/${tool_id}`)
 }
 
 export async function addDoc(process_id: string, payload: { title: string; url: string }) {
@@ -104,7 +112,15 @@ export async function addDoc(process_id: string, payload: { title: string; url: 
   return data
 }
 
+export async function removeDoc(process_id: string, doc_id: string) {
+  return await api.delete(`/processes/${process_id}/docs/${doc_id}`)
+}
+
 export async function addOwner(process_id: string, payload: { people_id: string }) {
   const { data } = await api.post(`/processes/${process_id}/owners`, payload)
   return data
+}
+
+export async function removeOwner(process_id: string, people_id: string) {
+  return await api.delete(`/processes/${process_id}/owners/${people_id}`)
 }

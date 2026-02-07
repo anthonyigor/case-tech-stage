@@ -7,10 +7,12 @@ export function OwnersTab({
   data,
   saving,
   onAdd,
+  onRemove,
 }: {
   data: ProcessDetail;
   saving: boolean;
   onAdd: (people_id: string) => void;
+  onRemove: (people_id: string) => void;
 }) {
   const [selected, setSelected] = useState<string>("");
 
@@ -80,11 +82,24 @@ export function OwnersTab({
             <div className="text-sm text-slate-300">Nenhum responsável.</div>
           ) : (
             data.owners.map((o) => (
-              <div key={o.id} className="rounded-xl bg-white/5 ring-1 ring-white/10 p-3">
-                <div className="font-medium text-slate-50">{o.people.name}</div>
-                <div className="text-xs text-slate-300">
-                  {o.people?.email ?? "—"} {o.people?.team?.name ? `• ${o.people.team.name}` : ""}
+              <div key={o.id} className="flex items-start justify-between gap-3 rounded-xl bg-white/5 ring-1 ring-white/10 p-3">
+                <div className="min-w-0">
+                  <div className="font-medium text-slate-50">{o.people?.name ?? o.people_id}</div>
+                  <div className="text-xs text-slate-300">
+                    {o.people?.email ?? "—"} {o.people?.team?.name ? `• ${o.people.team.name}` : ""}
+                  </div>
                 </div>
+
+                <button
+                  onClick={() => {
+                    if (confirm(`Remover ${o.people?.name ?? "responsável"} deste processo?`)) {
+                      onRemove(o.people_id);
+                    }
+                  }}
+                  className="shrink-0 rounded-xl bg-red-500/15 px-3 py-2 text-xs ring-1 ring-red-500/30 hover:bg-red-500/20 disabled:opacity-50"
+                >
+                  Remover
+                </button>
               </div>
             ))
           )}

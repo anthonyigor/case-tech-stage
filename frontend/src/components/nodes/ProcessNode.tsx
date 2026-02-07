@@ -1,5 +1,9 @@
 import { Handle, Position } from "@xyflow/react";
 import { FaPlus } from "react-icons/fa";
+import type { ProcessStatus } from "../../api/processes";
+import { useEffect, useRef, useState } from "react";
+
+const STATUSES: ProcessStatus[] = ["ACTIVE", "DRAFT", "DEPRECATED"];
 
 function badge(status: string) {
   if (status === "ACTIVE") return "bg-emerald-500/15 text-emerald-100 ring-emerald-500/30";
@@ -8,7 +12,20 @@ function badge(status: string) {
 }
 
 export function ProcessNode({ data }: any) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
   const canAddChild = typeof data?.onAddChild === "function";
+  const canChange = typeof data?.onChangeStatus === "function";
+
+  // Fecha ao clicar fora
+  useEffect(() => {
+    function onDocClick(e: MouseEvent) {
+      if (!ref.current) return;
+      if (!ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    if (open) document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, [open]);
   
   return (
     <div className="relative w-65 rounded-2xl bg-white/5 ring-1 ring-white/10 backdrop-blur-xl shadow-lg px-4 py-3">
@@ -39,9 +56,43 @@ export function ProcessNode({ data }: any) {
           </div>
         </div>
 
-        <span className={`shrink-0 rounded-full px-2 py-1 text-[11px] ring-1 ${badge(data.status)}`}>
-          {data.status}
-        </span>
+        {/* Badge clicável */}
+        <div ref={ref} className="relative">
+          <button
+            type="button"
+            disabled={!canChange}
+            onClick={(e) => {
+              e.stopPropagation(); // não abrir drawer ao clicar no badge
+              setOpen((v) => !v);
+            }}
+            className={`shrink-0 rounded-full px-2 py-1 text-[11px] ring-1 ${badge(data.status)} hover:brightness-110 hover:cursor-pointer disabled:opacity-60`}
+            title="Alterar status"
+          >
+            {data.status}
+          </button>
+
+          {open && (
+            <div
+              className="absolute right-0 mt-2 w-[150px] rounded-xl bg-slate-950/90 ring-1 ring-white/10 backdrop-blur-xl p-2 shadow-xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="px-2 pb-2 text-[11px] text-slate-400">Status</div>
+
+              {STATUSES.filter((s) => s !== data.status).map((s) => (
+                <button
+                  key={s}
+                  className="w-full text-left rounded-lg px-2 py-2 text-sm text-slate-100 hover:bg-white/10"
+                  onClick={() => {
+                    data.onChangeStatus?.(data.raw?.id, s);
+                    setOpen(false);
+                  }}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
     </div>

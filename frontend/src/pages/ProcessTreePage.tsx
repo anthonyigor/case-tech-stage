@@ -5,10 +5,12 @@ import { Background, Controls, ReactFlow } from "@xyflow/react";
 import { ProcessNode } from "../components/nodes/ProcessNode";
 import "@xyflow/react/dist/style.css";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createProcess, getProcessesTree, type CreateProcessDto } from "../api/processes";
+import { createProcess, getProcessesTree, updateProcessStatus, type CreateProcessDto, type ProcessStatus, type ProcessTreeItem } from "../api/processes";
 import { layoutWithDagre } from "../utils/dagreLayout";
 import { CreateProcessModal } from "../components/modals/CreateProcessModal";
 import { ProcessDrawer } from "../components/drawers/ProcessDrawer";
+import { findNode } from "../utils/findNode";
+import { updateStatusInTree } from "../utils/updateStatusInTree";
 
 const glass = "rounded-2xl bg-white/5 ring-1 ring-white/10 backdrop-blur-xl";
 const nodeTypes = {
@@ -30,11 +32,38 @@ export function ProcessTreePage() {
         staleTime: 30_000,
     });
 
+    // mutations
     const createProcessMut = useMutation({
         mutationFn: (payload: CreateProcessDto) => createProcess(payload),
         onSuccess: async () => {
             await qc.invalidateQueries({ queryKey: ["areaTree", areaId] })
         }
+    })
+
+    const updateProcessStatusMut = useMutation({
+        mutationFn: ({ id, status }: { id: string; status: ProcessStatus }) => updateProcessStatus(id, status),
+        onMutate: async ({ id, status }) => {
+            await qc.cancelQueries({ queryKey: ["areaTree", areaId] })
+            
+            const prev = qc.getQueryData<ProcessTreeItem[]>(['areaTree', areaId])
+
+            // atualiza o status em cascata se for raiz
+            if (prev) {
+              const target = findNode(prev, id)
+              const isRoot = target?.parent_id === null
+
+              const next = updateStatusInTree(prev, id, status, !!isRoot)
+              qc.setQueryData(['areaTree', areaId], next)
+            }
+
+            return { prev }
+        },
+        onError: (_err, _vars, ctx) => {
+          if (ctx?.prev) qc.setQueryData(["areaTree", areaId], ctx.prev);
+        },
+        onSettled: async () => {
+          await qc.invalidateQueries({ queryKey: ["areaTree", areaId] });
+        },
     })
     
     const graph = useMemo(() => {
@@ -50,6 +79,9 @@ export function ProcessTreePage() {
                     setCreateParentId(parentId);
                     setCreateModalOpen(true);
                 },
+                onChangeStatus: (id: string, status: ProcessStatus) => {
+                    updateProcessStatusMut.mutate({ id, status })
+                }
             },
         }));
 

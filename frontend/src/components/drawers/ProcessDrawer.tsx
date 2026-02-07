@@ -5,6 +5,9 @@ import {
   addOwner,
   addTool,
   getProcessDetail,
+  removeDoc,
+  removeOwner,
+  removeTool,
   updateProcess,
   type ToolType,
 } from "../../api/processes";
@@ -42,6 +45,7 @@ export function ProcessDrawer({ open, processId, areaId, onClose }: Props) {
     if (areaId) await qc.invalidateQueries({ queryKey: ["areaTree", areaId] });
   };
 
+  // mutations
   const updateMut = useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: any }) => updateProcess(id, payload),
     onSuccess: async (_, vars) => {
@@ -62,6 +66,15 @@ export function ProcessDrawer({ open, processId, areaId, onClose }: Props) {
     onError: (err: any) => toast.error(`Erro ao adicionar ferramenta: ${err.response.data.message}`)
   });
 
+  const removeToolMut = useMutation({
+    mutationFn: ({ id, tool_id }: { id: string; tool_id: string }) => removeTool(id, tool_id),
+    onSuccess: async (_, vars) => {
+      await qc.invalidateQueries({ queryKey: ["process", vars.id] });
+      toast.success("Ferramenta removida com sucesso!");
+    },
+    onError: (err: any) => toast.error(`Erro ao remover ferramenta: ${err.response.data.message}`)
+  })
+
   const addOwnerMut = useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: { people_id: string } }) => addOwner(id, payload),
     onSuccess: async (_, vars) => {
@@ -71,6 +84,15 @@ export function ProcessDrawer({ open, processId, areaId, onClose }: Props) {
     onError: (err: any) => toast.error(`Erro ao adicionar responsável: ${err.response.data.message}`)
   });
 
+  const removeOwnerMut = useMutation({
+    mutationFn: ({ id, people_id }: { id: string; people_id: string }) => removeOwner(id, people_id),
+    onSuccess: async (_, vars) => {
+      await qc.invalidateQueries({ queryKey: ["process", vars.id] });
+      toast.success("Responsável removido com sucesso!");
+    },
+    onError: (err: any) => toast.error(`Erro ao remover responsável: ${err.response.data.message}`)
+  })
+
   const addDocMut = useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: { title: string; url: string } }) => addDoc(id, payload),
     onSuccess: async (_, vars) => {
@@ -79,6 +101,15 @@ export function ProcessDrawer({ open, processId, areaId, onClose }: Props) {
     },
     onError: (err: any) => toast.error(`Erro ao adicionar documento: ${err.response.data.message}`)
   });
+
+  const removeDocMut = useMutation({
+    mutationFn: ({ id, doc_id }: { id: string; doc_id: string }) => removeDoc(id, doc_id),
+    onSuccess: async (_, vars) => {
+      await qc.invalidateQueries({ queryKey: ["process", vars.id] });
+      toast.success("Documento removido com sucesso!");
+    },
+    onError: (err: any) => toast.error(`Erro ao remover documento: ${err.response.data.message}`)
+  })
 
   const data = q.data;
 
@@ -154,18 +185,21 @@ export function ProcessDrawer({ open, processId, areaId, onClose }: Props) {
                 data={data}
                 saving={addOwnerMut.isPending}
                 onAdd={(people_id) => addOwnerMut.mutate({ id: data.id, payload: { people_id } })}
+                onRemove={(people_id) => removeOwnerMut.mutate({ id: data.id, people_id })}
               />
             ) : tab === "tools" ? (
               <ToolsTab
                 data={data}
                 saving={addToolMut.isPending}
                 onAdd={(payload) => addToolMut.mutate({ id: data.id, payload })}
+                onRemove={(tool_id) => removeToolMut.mutate({ id: data.id, tool_id })}
               />
             ) : (
               <DocsTab
                 data={data}
                 saving={addDocMut.isPending}
                 onAdd={(payload) => addDocMut.mutate({ id: data.id, payload })}
+                onRemove={(doc_id) => removeDocMut.mutate({ id: data.id, doc_id })}
               />
             )}
           </div>
