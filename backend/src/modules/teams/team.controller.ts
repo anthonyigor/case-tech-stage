@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post } from "@nestjs/common";
 import { TeamService } from "./services/team.service";
 import { CreateTeamDto } from "./dto/create-team.dto";
 
@@ -16,5 +16,10 @@ export class TeamController {
     @Get()
     async findAll() {
         return await this.teamService.findAll();
+    }
+
+    @Delete(':id')
+    async delete(@Param('id') id: string) {
+        return await this.teamService.delete(id);
     }
 }

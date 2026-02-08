@@ -24,3 +24,7 @@ export async function getTeams(): Promise<Team[]> {
     const { data } = await api.get("/teams")
     return data
 }
+
+export async function deleteTeam(id: string): Promise<void> {
+    await api.delete(`/teams/${id}`)
+}

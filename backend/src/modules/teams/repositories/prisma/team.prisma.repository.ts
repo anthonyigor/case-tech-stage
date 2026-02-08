@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { ITeamRepository } from "../team.repository";
 import { PrismaService } from "src/infra/prisma/prisma.service";
-import { Team } from "generated/prisma/client";
+import { People, Team } from "generated/prisma/client";
 import { CreateTeamDto } from "../../dto/create-team.dto";
 
 @Injectable()
@@ -19,14 +19,14 @@ export class TeamPrismaRepository implements ITeamRepository {
         })
     }
 
-    async findTeamById(team_id: string): Promise<Team> {
+    async findTeamById(team_id: string): Promise<Team & { people: People[] } > {
         return await this.prisma.team.findUnique({
             where: { id: team_id },
             include: { people: true }
         })
     }
 
-    async findTeamByName(name: string): Promise<Team> {
+    async findTeamByName(name: string): Promise<Team & { people: People[] } > {
         return await this.prisma.team.findFirst({
             where: {
                 name: {

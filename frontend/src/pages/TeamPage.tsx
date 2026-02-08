@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTeams } from "../hooks/useTeams";
 import { useState } from "react";
 import { CreateTeamModal } from "../components/modals/CreateTeamModal";
-import { createTeam, type CreateTeamDto } from "../api/teams";
+import { createTeam, deleteTeam, type CreateTeamDto } from "../api/teams";
 import toast from "react-hot-toast";
 
 const glass = "rounded-2xl bg-white/2 ring-1 ring-white/10 backdrop-blur-xl";
@@ -11,7 +11,7 @@ export function TeamPage() {
     const qc = useQueryClient()
     const [openModal, setOpenModal] = useState<boolean>(false)
 
-    const { data, isLoading } = useTeams()
+    const { data } = useTeams()
 
     const createMut = useMutation({
         mutationFn: (payload: CreateTeamDto) => createTeam(payload),
@@ -20,6 +20,15 @@ export function TeamPage() {
             toast.success("Time criado com sucesso!")
         },
         onError: (err: any) => toast.error(`Erro ao criar time: ${err?.response?.data?.message || err.message || "Erro desconhecido"}`)
+    })
+
+    const deleteMut = useMutation({
+        mutationFn: (id: string) => deleteTeam(id),
+        onSuccess: async () => {
+            await qc.invalidateQueries({ queryKey: ["teams"] })
+            toast.success("Time removido com sucesso!")
+        },
+        onError: (err: any) => toast.error(`Erro ao remover time: ${err?.response?.data?.message || err.message || "Erro desconhecido"}`)
     })
 
     const submit = async (form: CreateTeamDto) => {
@@ -61,16 +70,16 @@ export function TeamPage() {
                                 </div>
                                 </div>
     
-                                {/* <button
+                                <button
                                 onClick={() => {
-                                    if (confirm(`Remover ${o.name ?? "pessoa"}?`)) {
+                                    if (confirm(`Remover ${o.name ?? "time"}?`)) {
                                         deleteMut.mutate(o.id)
                                     }
                                 }}
                                 className="shrink-0 rounded-xl bg-red-500/15 px-3 py-2 text-xs ring-1 ring-red-500/30 hover:bg-red-500/20 disabled:opacity-50"
                                 >
                                 Remover
-                                </button> */}
+                                </button>
                             </div>
                             ))
                     ) : (
