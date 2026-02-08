@@ -3,6 +3,7 @@ import { ITeamRepository } from "../team.repository";
 import { PrismaService } from "src/infra/prisma/prisma.service";
 import { People, Team } from "generated/prisma/client";
 import { CreateTeamDto } from "../../dto/create-team.dto";
+import { UpdateTeamDto } from "../../dto/update-team.dto";
 
 @Injectable()
 export class TeamPrismaRepository implements ITeamRepository {
@@ -44,10 +45,16 @@ export class TeamPrismaRepository implements ITeamRepository {
         })
     }
 
-    async updateTeam(team_id: string, data: any): Promise<void> {
+    async updateTeam(team_id: string, data: UpdateTeamDto): Promise<void> {
         await this.prisma.team.update({
             where: { id: team_id },
-            data,
+            data: {
+                name: data.name?.trim(),
+                description: data.description?.trim(),
+                people: data.peopleIds ? {
+                    set: data.peopleIds.map(id => ({ id }))
+                } : undefined
+            }
         })
     }
     
