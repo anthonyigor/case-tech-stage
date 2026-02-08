@@ -24,6 +24,11 @@ export type CreateProcessDto = {
   position?: number;
 }
 
+export type MoveProcessDto = {
+  parent_id?: string | null;   // null = move para raiz; string = move para baixo de outro processo
+  position: number;
+}
+
 export type ToolType = "TOOL" | "SYSTEM" | null;
 
 type ToolDetail = {
@@ -94,8 +99,12 @@ export function updateProcess(
   return api.patch(`/processes/${id}/details`, payload)
 }
 
-export function updateProcessStatus(id: string, status: ProcessStatus) {
-  return api.patch(`/processes/${id}/status`, { status })
+export async function moveProcess(process_id: string, payload: MoveProcessDto) {
+  return await api.patch(`/processes/${process_id}/move`, payload)
+}
+
+export async function updateProcessStatus(id: string, status: ProcessStatus) {
+  return await api.patch(`/processes/${id}/status`, { status })
 }
 
 export async function addTool(process_id: string, payload: { name: string; type?: ToolType; url?: string }) {

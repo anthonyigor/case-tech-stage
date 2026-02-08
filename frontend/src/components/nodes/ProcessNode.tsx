@@ -14,8 +14,7 @@ function badge(status: string) {
 export function ProcessNode({ data }: any) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
-  const canAddChild = typeof data?.onAddChild === "function";
-  const canChange = typeof data?.onChangeStatus === "function";
+  const disable = !!data.disableActions;
 
   // Fecha ao clicar fora
   useEffect(() => {
@@ -28,7 +27,12 @@ export function ProcessNode({ data }: any) {
   }, [open]);
   
   return (
-    <div className="relative w-65 rounded-2xl bg-white/5 ring-1 ring-white/10 backdrop-blur-xl shadow-lg px-4 py-3">
+    <div 
+     className={[
+        "relative w-65 rounded-2xl bg-white/5 ring-1 ring-white/10 backdrop-blur-xl shadow-lg px-4 py-3",
+        data.isDropTarget ? "ring-sky-500/60 bg-sky-500/10" : "",
+      ].join(" ")}
+    >
       <Handle type="target" position={Position.Top} className="bg-white/60!" />
       <Handle type="source" position={Position.Bottom} className="bg-white/60!" />
 
@@ -36,9 +40,10 @@ export function ProcessNode({ data }: any) {
       <button
         type="button"
         title="Criar subprocesso"
-        disabled={!canAddChild}
+        disabled={disable}
         onClick={(e) => {
           e.stopPropagation();
+          if (disable) return;
           data.onAddChild?.(data.raw?.id);
         }}
         className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-xl
@@ -60,9 +65,10 @@ export function ProcessNode({ data }: any) {
         <div ref={ref} className="relative">
           <button
             type="button"
-            disabled={!canChange}
+            disabled={disable}
             onClick={(e) => {
               e.stopPropagation(); // não abrir drawer ao clicar no badge
+              if (disable) return;
               setOpen((v) => !v);
             }}
             className={`shrink-0 rounded-full px-2 py-1 text-[11px] ring-1 ${badge(data.status)} hover:brightness-110 hover:cursor-pointer disabled:opacity-60`}

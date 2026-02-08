@@ -1,16 +1,17 @@
 import { useParams } from "react-router-dom";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { buildGraphFromTree } from "../utils/buildGraph";
-import { Controls, ReactFlow } from "@xyflow/react";
+import { Controls, ReactFlow, type ReactFlowInstance } from "@xyflow/react";
 import { ProcessNode } from "../components/nodes/ProcessNode";
 import "@xyflow/react/dist/style.css";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createProcess, getProcessesTree, updateProcessStatus, type CreateProcessDto, type ProcessStatus, type ProcessTreeItem } from "../api/processes";
+import { createProcess, getProcessesTree, moveProcess, updateProcessStatus, type CreateProcessDto, type MoveProcessDto, type ProcessStatus, type ProcessTreeItem } from "../api/processes";
 import { layoutWithDagre } from "../utils/dagreLayout";
 import { CreateProcessModal } from "../components/modals/CreateProcessModal";
 import { ProcessDrawer } from "../components/drawers/ProcessDrawer";
 import { findNode } from "../utils/findNode";
 import { updateStatusInTree } from "../utils/updateStatusInTree";
+import { useProcessMoveDnD } from "../hooks/useProcessMove";
 
 const glass = "rounded-2xl bg-white/5 ring-1 ring-white/10 backdrop-blur-xl";
 const nodeTypes = {
@@ -19,11 +20,19 @@ const nodeTypes = {
 
 export function ProcessTreePage() {
     const { areaId } = useParams()
+    
     const qc = useQueryClient()
+    
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [selectedProcessId, setSelectedProcessId] = useState<string | null>(null);
     const [createModalOpen, setCreateModalOpen] = useState<boolean>(false)
     const [createParentId, setCreateParentId] = useState<string | null>(null)
+
+    // states para drag-and-drop
+    const [moveMode, setMoveMode] = useState(false);
+
+    const [rf, setRf] = useState<ReactFlowInstance | null>(null);
+
 
     const q = useQuery({
         queryKey: ["areaTree", areaId],
@@ -65,6 +74,34 @@ export function ProcessTreePage() {
           await qc.invalidateQueries({ queryKey: ["areaTree", areaId] });
         },
     })
+
+    const moveProcessMut = useMutation({
+        mutationFn: ({process_id, payload}: { process_id: string; payload: MoveProcessDto }) => moveProcess(process_id, payload),
+        onSuccess: async () => {
+          await qc.invalidateQueries({ queryKey: ["areaTree", areaId] })
+        }
+    })
+
+    // callbacks
+    const onAddChild = useCallback((parentId: string) => {
+      if (moveMode) return;
+      setCreateParentId(parentId);
+      setCreateModalOpen(true);
+    }, [moveMode]);
+
+    const onChangeStatus = useCallback((id: string, status: ProcessStatus) => {
+      if (moveMode) return;
+      updateProcessStatusMut.mutate({ id, status });
+    }, [moveMode, updateProcessStatusMut]);
+
+    const moveDnD = useProcessMoveDnD({
+      moveMode,
+      areaId,
+      rf,
+      tree: q.data,
+      queryClient: qc,
+      moveMutation: moveProcessMut,
+    });
     
     const graph = useMemo(() => {
         if (!q.data) return { nodes: [], edges: [] }
@@ -75,18 +112,15 @@ export function ProcessTreePage() {
             ...n,
             data: {
                 ...n.data,
-                onAddChild: (parentId: string) => {
-                    setCreateParentId(parentId);
-                    setCreateModalOpen(true);
-                },
-                onChangeStatus: (id: string, status: ProcessStatus) => {
-                    updateProcessStatusMut.mutate({ id, status })
-                }
+                disableActions: moveMode,
+                isDropTarget: moveDnD.hoverParentId === n.id,
+                onAddChild,
+                onChangeStatus,
             },
         }));
 
         return { nodes: nodesWithActions, edges: laid.edges };
-    }, [q.data])
+    }, [q.data, moveMode, moveDnD.hoverParentId])
 
     function openCreateRoot() {
         setCreateParentId(null)
@@ -114,38 +148,83 @@ export function ProcessTreePage() {
             >
               + Processo raiz
             </button>
+
+            <button
+              onClick={() => {
+                setMoveMode((v) => !v);
+                // limpando preview quando troca modo
+                moveDnD.clearPreview();
+              }}
+              className={[
+                "rounded-xl px-4 py-2 text-sm ring-1 transition",
+                moveMode
+                  ? "bg-sky-500/20 ring-sky-500/30 hover:bg-sky-500/25"
+                  : "bg-white/5 ring-white/10 hover:bg-white/10",
+              ].join(" ")}
+            >
+              {moveMode ? "Modo edição: ON" : "Modo edição: OFF"}
+            </button>
+
           </div>
         </div>
+        {moveMode && (
+          <div className="mt-3 text-xs text-slate-400">
+            Arraste um processo e solte em cima de outro para virar subprocesso, ou solte no vazio para virar raiz.
+          </div>
+        )}
       </div>
 
       {/* Flow */}
-      <div className={`${glass} flex-1 overflow-hidden`}>
-        {q.isLoading ? (
-          <div className="p-6 text-slate-300">Carregando árvore…</div>
-        ) : q.isError ? (
-          <div className="p-6 text-red-200">Erro ao carregar: {(q.error as Error).message}</div>
-        ) : (
-          <ReactFlow
-            nodes={graph.nodes}
-            edges={graph.edges}
-            nodeTypes={nodeTypes}
-            fitView
-            fitViewOptions={{ padding: 0.3 }}
-            defaultEdgeOptions={{ type: "smoothstep" }}
-            className="h-full"
-            onNodeClick={(_, node) => {
-                setSelectedProcessId(node.id);
-                setDrawerOpen(true);
-            }}
-            onPaneClick={() => {
-                setSelectedProcessId(null);
-                setDrawerOpen(false);
+        <ReactFlow
+          onInit={setRf}
+          nodes={graph.nodes}
+          edges={graph.edges}
+          nodeTypes={nodeTypes}
+          fitView
+          fitViewOptions={{ padding: 0.3 }}
+          defaultEdgeOptions={{ type: "smoothstep" }}
+          className="h-full"
+          nodesDraggable={moveMode && !moveProcessMut.isPending}
+          elementsSelectable={!moveMode}
+          onNodeDragStart={moveDnD.handlers.onNodeDragStart}
+          onNodeDrag={moveDnD.handlers.onNodeDrag}
+          onNodeDragStop={moveDnD.handlers.onNodeDragStop}
+          onNodeClick={(_, node) => {
+              if (moveMode) return
+              setSelectedProcessId(node.id);
+              setDrawerOpen(true);
+          }}
+          onPaneClick={() => {
+              if (moveMode) return;
+              setSelectedProcessId(null);
+              setDrawerOpen(false);
+          }}
+        >
+          <Controls className="text-black"/>
+        </ReactFlow>
+        {moveMode && moveDnD.cursor && moveDnD.draggingId && (
+          <div
+            className="pointer-events-none fixed z-[9999]
+                      rounded-xl bg-slate-950/90 ring-1 ring-white/10
+                      backdrop-blur-xl px-3 py-2 text-xs text-slate-100 shadow-xl"
+            style={{
+              left: moveDnD.cursor.x + 12,
+              top: moveDnD.cursor.y + 12,
             }}
           >
-            <Controls className="text-black"/>
-          </ReactFlow>
+            <div className="text-slate-300">
+              Destino:{" "}
+              <span className="font-medium text-slate-50">
+                {moveDnD.hoverParentId
+                  ? graph.nodes.find((n) => n.id === moveDnD.hoverParentId)?.data?.title
+                  : "Raiz"}
+              </span>
+            </div>
+            <div className="text-slate-400">
+              Posição: {moveDnD.hoverPosition ?? 0}
+            </div>
+          </div>
         )}
-      </div>
 
         {/* Drawer de detalhes do processo */}
         <ProcessDrawer
