@@ -2,14 +2,18 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTeams } from "../hooks/useTeams";
 import { useState } from "react";
 import { CreateTeamModal } from "../components/modals/CreateTeamModal";
-import { createTeam, deleteTeam, type CreateTeamDto } from "../api/teams";
+import { createTeam, deleteTeam, updateTeam, type CreateTeamDto } from "../api/teams";
 import toast from "react-hot-toast";
+import { EditTeamModal } from "../components/modals/EditTeamModal";
 
 const glass = "rounded-2xl bg-white/2 ring-1 ring-white/10 backdrop-blur-xl";
 
 export function TeamPage() {
     const qc = useQueryClient()
     const [openModal, setOpenModal] = useState<boolean>(false)
+    const [editOpen, setEditOpen] = useState(false);
+    const [editing, setEditing] = useState<any | null>(null);
+
 
     const { data } = useTeams()
 
@@ -21,6 +25,17 @@ export function TeamPage() {
         },
         onError: (err: any) => toast.error(`Erro ao criar time: ${err?.response?.data?.message || err.message || "Erro desconhecido"}`)
     })
+
+    const updateMut = useMutation({
+        mutationFn: ({ id, payload }: { id: string; payload: CreateTeamDto }) => updateTeam(id, payload),
+        onSuccess: async () => {
+            await qc.invalidateQueries({ queryKey: ["teams"] });
+            toast.success("Time atualizado com sucesso!");
+        },
+        onError: (err: any) =>
+            toast.error(`Erro ao atualizar time: ${err?.response?.data?.message || err.message || "Erro desconhecido"}`),
+    });
+
 
     const deleteMut = useMutation({
         mutationFn: (id: string) => deleteTeam(id),
@@ -35,6 +50,12 @@ export function TeamPage() {
         await createMut.mutateAsync(form)
         setOpenModal(false)
     }
+
+    const submitEdit = async (id: string, form: CreateTeamDto) => {
+        await updateMut.mutateAsync({ id, payload: form });
+        setEditOpen(false);
+        setEditing(null);
+    };
 
     return (
             <div className="flex min-h-[calc(100vh-2rem)] flex-col gap-4">
@@ -69,17 +90,28 @@ export function TeamPage() {
                                     {o.description ?? "Sem descrição"}
                                 </div>
                                 </div>
-    
-                                <button
-                                onClick={() => {
-                                    if (confirm(`Remover ${o.name ?? "time"}?`)) {
-                                        deleteMut.mutate(o.id)
-                                    }
-                                }}
-                                className="shrink-0 rounded-xl bg-red-500/15 px-3 py-2 text-xs ring-1 ring-red-500/30 hover:bg-red-500/20 disabled:opacity-50"
-                                >
-                                Remover
-                                </button>
+                                <div className="shrink-0 flex gap-2">
+                                     <button
+                                        onClick={() => {
+                                        setEditing(o);
+                                        setEditOpen(true);
+                                        }}
+                                        className="rounded-xl bg-white/5 px-3 py-2 text-xs ring-1 ring-white/10 hover:bg-white/10"
+                                    >
+                                        Editar
+                                    </button>
+                                
+                                    <button
+                                    onClick={() => {
+                                        if (confirm(`Remover ${o.name ?? "time"}?`)) {
+                                            deleteMut.mutate(o.id)
+                                        }
+                                    }}
+                                    className="shrink-0 rounded-xl bg-red-500/15 px-3 py-2 text-xs ring-1 ring-red-500/30 hover:bg-red-500/20 disabled:opacity-50"
+                                    >
+                                    Remover
+                                    </button>
+                                </div>
                             </div>
                             ))
                     ) : (
@@ -93,6 +125,23 @@ export function TeamPage() {
                         loading={createMut.isPending}
                     />
                 )}
+                {editOpen && editing && (
+                    <EditTeamModal
+                        team={{
+                            id: editing.id,
+                            name: editing.name,
+                            description: editing.description,
+                            people: editing.people ?? [],
+                        }}
+                        onClose={() => {
+                        setEditOpen(false);
+                        setEditing(null);
+                        }}
+                        onSubmit={submitEdit}
+                        loading={updateMut.isPending}
+                    />
+                )}
+
             </div>
         )
 }
