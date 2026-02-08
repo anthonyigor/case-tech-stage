@@ -10,6 +10,18 @@ export type Person = {
   created_at: string;
 };
 
+export type CreatePersonDto = {
+    name: string;
+    email: string;
+    role?: string;
+    team_id?: string
+}
+
+export async function createPerson(payload: CreatePersonDto): Promise<Person> {
+    const { data } = await api.post("/people", payload);
+    return data;
+}
+
 export async function getPeople(): Promise<Person[]> {
     const { data } = await api.get("/people");
     return data;

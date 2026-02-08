@@ -1,16 +1,27 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { usePeople } from "../hooks/usePeople";
-import { removePerson } from "../api/people";
+import { createPerson, removePerson, type CreatePersonDto } from "../api/people";
 import toast from "react-hot-toast";
+import { useState } from "react";
+import { CreatePeopleModal } from "../components/modals/CreatePeopleModal";
 
 const glass = "rounded-2xl bg-white/2 ring-1 ring-white/10 backdrop-blur-xl";
 
 export function PeoplePage() {
     const qc = useQueryClient()
+    const [openModal, setOpenModal] = useState<boolean>(false)
 
     const { data } = usePeople()
 
     // mutations
+    const createMut = useMutation({
+        mutationFn: (payload: CreatePersonDto) => createPerson(payload),
+        onSuccess: () => {
+            qc.invalidateQueries({ queryKey: ["people"] })
+        },
+        onError: (err: any) => toast.error(`Erro ao criar pessoa: ${err?.response?.data?.message || err.message || "Erro desconhecido"}`)
+    })
+
     const deleteMut = useMutation({
         mutationFn: (id: string) => removePerson(id),
         onSuccess: () => {
@@ -19,6 +30,12 @@ export function PeoplePage() {
         },
         onError: (err: any) => toast.error(`Erro ao remover pessoa: ${err?.response?.data?.message || err.message || "Erro desconhecido"}`)
     })
+
+    async function onSubmit(form: CreatePersonDto) {
+        await createMut.mutateAsync(form)
+        setOpenModal(false)
+    }
+
 
     return (
         <div className="flex min-h-[calc(100vh-2rem)] flex-col gap-4">
@@ -33,7 +50,7 @@ export function PeoplePage() {
                     </div>
                     <div className="flex gap-2">
                         <button
-                            onClick={() => alert("Em breve!")}
+                            onClick={() => setOpenModal(true)}
                             className="cursor-pointer rounded-xl bg-sky-500/20 px-4 py-2 text-sm ring-1 ring-sky-500/30 hover:bg-sky-500/25"
                         >
                             + Nova pessoa
@@ -70,7 +87,13 @@ export function PeoplePage() {
                     <p className="text-slate-300">Nenhuma pessoa cadastrada.</p>
                 )}
             </div>
-
+            {openModal && (
+                <CreatePeopleModal
+                    onClose={() => setOpenModal(false)}
+                    onSubmit={onSubmit}
+                    loading={createMut.isPending}
+                />
+            )}
         </div>
     )
 }
