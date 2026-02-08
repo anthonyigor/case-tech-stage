@@ -4,6 +4,7 @@ import { PrismaModule } from './infra/prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { ProcessesModule } from './modules/processes/processes.module';
 import { PeopleModule } from './modules/people/people.module';
+import { TeamModule } from './modules/teams/team.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { PeopleModule } from './modules/people/people.module';
     AreasModule,
     ProcessesModule,
     PeopleModule,
+    TeamModule,
     PrismaModule
   ],
   controllers: [],
