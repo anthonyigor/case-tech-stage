@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post } from "@nestjs/common";
 import { CreatePeopleDto } from "./dto/create-people.dto";
 import { PeopleService } from "./services/people.service";
 
@@ -18,6 +18,13 @@ export class PeopleController {
     @Get()
     async getAllPeople() {
         return await this.peopleService.getAll()
+    }
+
+    @Delete(":id")
+    async deletePeople(
+        @Param("id") id: string
+    ) {
+        return await this.peopleService.deleteById(id)
     }
 
 }

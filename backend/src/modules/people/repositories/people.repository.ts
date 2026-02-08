@@ -8,4 +8,5 @@ export abstract class IPeopleRepository {
     abstract findByEmail(email: string): Promise<People | null>
     abstract findById(id: string): Promise<People | null>
     abstract findAll(): Promise<People[]>
+    abstract deleteById(id: string): Promise<void>
 }

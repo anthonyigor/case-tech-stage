@@ -23,4 +23,14 @@ export class PeopleService {
         return await this.peopleRepository.findById(id)
     }
 
+    async deleteById(id: string) {
+        const exists = await this.peopleRepository.findById(id)
+        if (!exists) throw new ConflictException('Pessoa não encontrada')
+
+        await this.peopleRepository.deleteById(id)
+        return {
+            ok: true
+        }
+    }
+
 }

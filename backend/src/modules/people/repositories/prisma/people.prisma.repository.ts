@@ -32,7 +32,15 @@ export class PeoplePrismaRepository implements IPeopleRepository {
     }
     
     async findAll(): Promise<People[]> {
-        return await this.prisma.people.findMany()
+        return await this.prisma.people.findMany({
+            include: { team: true }
+        })
+    }
+
+    async deleteById(id: string): Promise<void> {
+        await this.prisma.people.delete({
+            where: { id }
+        })
     }
 
 }
