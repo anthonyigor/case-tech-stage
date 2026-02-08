@@ -14,4 +14,8 @@ export class TeamService {
         return await this.teamRepository.createTeam(data);
     }
 
+    async findAll() {
+        return await this.teamRepository.getTeams()
+    }
+
 }

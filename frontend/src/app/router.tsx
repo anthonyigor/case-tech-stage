@@ -3,6 +3,7 @@ import { Layout } from "../components/layout/Layout";
 import { AreasPage } from "../pages/AreasPage";
 import { ProcessTreePage } from "../pages/ProcessTreePage";
 import { PeoplePage } from "../pages/PeoplePage";
+import { TeamPage } from "../pages/TeamPage";
 
 export const router = createBrowserRouter([
   {
@@ -23,6 +24,10 @@ export const router = createBrowserRouter([
       {
         path: "/people",
         element: <PeoplePage />
+      },
+      {
+        path: "/teams",
+        element: <TeamPage />
       }
     ],
   },

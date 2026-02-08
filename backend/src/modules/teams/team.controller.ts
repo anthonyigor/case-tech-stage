@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from "@nestjs/common";
+import { Body, Controller, Get, Post } from "@nestjs/common";
 import { TeamService } from "./services/team.service";
 import { CreateTeamDto } from "./dto/create-team.dto";
 
@@ -11,5 +11,10 @@ export class TeamController {
         @Body() data: CreateTeamDto
     ) {
         return await this.teamService.create(data);
+    }
+    
+    @Get()
+    async findAll() {
+        return await this.teamService.findAll();
     }
 }
