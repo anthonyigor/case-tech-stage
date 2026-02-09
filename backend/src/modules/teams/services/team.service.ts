@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable } from "@nestjs/common";
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { ITeamRepository } from "../repositories/team.repository";
 import { CreateTeamDto } from "../dto/create-team.dto";
 import { UpdateTeamDto } from "../dto/update-team.dto";
@@ -25,7 +25,7 @@ export class TeamService {
 
     async update(id: string, data: UpdateTeamDto) {
         const team = await this.teamRepository.findTeamById(id);
-        if (!team) throw new ConflictException("Time não encontrado");
+        if (!team) throw new NotFoundException("Time não encontrado");
 
         if (data.name) {
             const name = data.name.trim();
@@ -36,7 +36,7 @@ export class TeamService {
         if (data.peopleIds) {
             const people = await this.peopleRepository.findAll()
             const peopleIds = new Set(Array.from(people.map(p => p.id)))
-            let missing = []
+            const missing = []
             
             for (const people of data.peopleIds) {
                 const found = peopleIds.has(people)
@@ -54,9 +54,9 @@ export class TeamService {
 
     async delete(id: string) {
         const team = await this.teamRepository.findTeamById(id);
-        if (!team) throw new ConflictException("Time não encontrado");
+        if (!team) throw new NotFoundException("Time não encontrado");
 
-        if (team.people.length > 0) throw new ConflictException("Não é possível deletar um time que possui pessoas associadas");
+        if (team.people.length > 0) throw new BadRequestException("Não é possível deletar um time que possui pessoas associadas");
 
         await this.teamRepository.deleteTeam(id);
         return {

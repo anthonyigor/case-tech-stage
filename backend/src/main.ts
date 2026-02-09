@@ -25,7 +25,12 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, config)
   SwaggerModule.setup("docs", app, document, {
-    customSiteTitle: "Case Tech API Docs"
+    customSiteTitle: "Case Tech API Docs",
+    customCss: `
+    .swagger-ui .topbar {
+    background-color: #19003C;
+    }
+    `
   })
 
   await app.listen(3000);

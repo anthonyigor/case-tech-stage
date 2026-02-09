@@ -16,7 +16,7 @@ export function Layout() {
             <div className="pointer-events-none fixed inset-0">
                 <div className="absolute -top-44 left-1/2 h-140 w-140 -translate-x-1/2 rounded-full bg-indigo-600 blur-3xl"/>
                 <div className="absolute -bottom-56 right-40 h-170 w-170 rounded-full bg-cyan-500/15 blur-3xl" />
-                <div className="absolute inset-0 bg-linear-to-b from-slate-950 via-slate-950 to-slate-900" />
+                <div className="absolute inset-0 bg-linear-to-b from-indigo-950 via-indigo-950 to-slate-900" />
             </div>
 
             <div className="relative mx-auto flex min-h-dvh w-full max-w-470 gap-4 p-4">
