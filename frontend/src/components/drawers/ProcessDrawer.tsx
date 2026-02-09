@@ -26,11 +26,22 @@ type Props = {
   processId: string | null;
   areaId?: string;
   onClose: () => void;
+  onDelete?: (id: string) => void;
+  deleting?: boolean;
+  canDelete?: boolean;
 };
 
 type Tab = "details" | "owners" | "tools" | "docs";
 
-export function ProcessDrawer({ open, processId, areaId, onClose }: Props) {
+export function ProcessDrawer({ 
+  open, 
+  processId, 
+  areaId, 
+  onClose,
+  onDelete,
+  deleting,
+  canDelete 
+}: Props) {
   const qc = useQueryClient();
   const [tab, setTab] = useState<Tab>("details");
 
@@ -141,13 +152,23 @@ export function ProcessDrawer({ open, processId, areaId, onClose }: Props) {
                 {data?.title ?? (q.isLoading ? "Carregando..." : "—")}
               </div>
             </div>
+            <div className="flex gap-2">
+              <button
+                disabled={!canDelete || deleting}
+                onClick={() => processId && onDelete?.(processId)}
+                className="rounded-xl bg-red-500/15 px-3 py-2 text-sm ring-1 ring-red-500/30 hover:bg-red-500/20 disabled:opacity-50"
+                title={!canDelete ? "Remova/mova os subprocessos antes" : "Remover processo"}
+              >
+                {deleting ? "Removendo..." : "Remover"}
+              </button>
 
-            <button
-              onClick={handleClose}
-              className="rounded-xl bg-white/5 px-3 py-2 text-sm ring-1 ring-white/10 hover:bg-white/10"
-            >
-              Fechar
-            </button>
+              <button
+                onClick={handleClose}
+                className="rounded-xl bg-white/5 px-3 py-2 text-sm ring-1 ring-white/10 hover:bg-white/10"
+              >
+                Fechar
+              </button>
+            </div>
           </div>
 
           {/* tabs */}

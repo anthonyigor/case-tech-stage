@@ -5,13 +5,14 @@ import { Controls, ReactFlow, type ReactFlowInstance } from "@xyflow/react";
 import { ProcessNode } from "../components/nodes/ProcessNode";
 import "@xyflow/react/dist/style.css";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createProcess, getProcessesTree, moveProcess, updateProcessStatus, type CreateProcessDto, type MoveProcessDto, type ProcessStatus, type ProcessTreeItem } from "../api/processes";
+import { createProcess, getProcessesTree, moveProcess, removeProcess, updateProcessStatus, type CreateProcessDto, type MoveProcessDto, type ProcessStatus, type ProcessTreeItem } from "../api/processes";
 import { layoutWithDagre } from "../utils/dagreLayout";
 import { CreateProcessModal } from "../components/modals/CreateProcessModal";
 import { ProcessDrawer } from "../components/drawers/ProcessDrawer";
 import { findNode } from "../utils/findNode";
 import { updateStatusInTree } from "../utils/updateStatusInTree";
 import { useProcessMoveDnD } from "../hooks/useProcessMove";
+import toast from "react-hot-toast";
 
 const glass = "rounded-2xl bg-white/5 ring-1 ring-white/10 backdrop-blur-xl";
 const nodeTypes = {
@@ -82,6 +83,15 @@ export function ProcessTreePage() {
         }
     })
 
+    const removeProcessMut = useMutation({
+      mutationFn: ({id}: {id: string}) => removeProcess(id),
+      onSuccess: async () => {
+        await qc.invalidateQueries({ queryKey: ["areaTree", areaId] })
+        toast.success('Processo removido com sucesso!')
+      },
+      onError: (err: any) => toast.error(`Erro ao remover processo: ${err.response?.data?.message}`)
+    })
+
     // callbacks
     const onAddChild = useCallback((parentId: string) => {
       if (moveMode) return;
@@ -89,10 +99,23 @@ export function ProcessTreePage() {
       setCreateModalOpen(true);
     }, [moveMode]);
 
+    const mutateStatus = updateProcessStatusMut.mutate
+
     const onChangeStatus = useCallback((id: string, status: ProcessStatus) => {
       if (moveMode) return;
-      updateProcessStatusMut.mutate({ id, status });
-    }, [moveMode, updateProcessStatusMut]);
+      mutateStatus({ id, status });
+    }, [moveMode, mutateStatus]);
+
+    const onDeleteProcess = useCallback(async (id: string) => {
+      if (!areaId || !q.data) return
+
+      if (!confirm("Tem certeza que deseja remover esse processo?")) return
+
+      await removeProcessMut.mutateAsync({id})
+
+      setDrawerOpen(false)
+      setSelectedProcessId(null)
+    }, [areaId, q.data, removeProcessMut])
 
     const moveDnD = useProcessMoveDnD({
       moveMode,
@@ -102,25 +125,30 @@ export function ProcessTreePage() {
       queryClient: qc,
       moveMutation: moveProcessMut,
     });
+
+    const layouted = useMemo(() => {
+      if (!q.data) return { nodes: [], edges: [] };
+
+      const base = buildGraphFromTree(q.data);
+      return layoutWithDagre(base.nodes, base.edges, "TB");
+    }, [q.data]);
+
     
     const graph = useMemo(() => {
-        if (!q.data) return { nodes: [], edges: [] }
-        const base = buildGraphFromTree(q.data);
-        const laid = layoutWithDagre(base.nodes, base.edges, "TB");
+      const nodes = layouted.nodes.map((n) => ({
+        ...n,
+        data: {
+          ...n.data,
+          disableActions: moveMode,
+          isDropTarget: moveDnD.hoverParentId === n.id,
+          onAddChild,
+          onChangeStatus,
+        },
+      }));
 
-        const nodesWithActions = laid.nodes.map((n) => ({
-            ...n,
-            data: {
-                ...n.data,
-                disableActions: moveMode,
-                isDropTarget: moveDnD.hoverParentId === n.id,
-                onAddChild,
-                onChangeStatus,
-            },
-        }));
+      return { nodes, edges: layouted.edges };
+    }, [layouted, moveMode, moveDnD.hoverParentId, onAddChild, onChangeStatus]);
 
-        return { nodes: nodesWithActions, edges: laid.edges };
-    }, [q.data, moveMode, moveDnD.hoverParentId, onAddChild, onChangeStatus])
 
     function openCreateRoot() {
         setCreateParentId(null)
@@ -204,7 +232,7 @@ export function ProcessTreePage() {
         </ReactFlow>
         {moveMode && moveDnD.cursor && moveDnD.draggingId && (
           <div
-            className="pointer-events-none fixed z-[9999]
+            className="pointer-events-none fixed z-9999
                       rounded-xl bg-slate-950/90 ring-1 ring-white/10
                       backdrop-blur-xl px-3 py-2 text-xs text-slate-100 shadow-xl"
             style={{
@@ -216,7 +244,7 @@ export function ProcessTreePage() {
               Destino:{" "}
               <span className="font-medium text-slate-50">
                 {moveDnD.hoverParentId
-                  ? graph.nodes.find((n) => n.id === moveDnD.hoverParentId)?.data?.title
+                  ? (graph.nodes.find((n) => n.id === moveDnD.hoverParentId)?.data as any)?.title
                   : "Raiz"}
               </span>
             </div>
@@ -232,6 +260,11 @@ export function ProcessTreePage() {
             processId={selectedProcessId}
             areaId={areaId}
             onClose={() => setDrawerOpen(false)}
+            onDelete={onDeleteProcess}
+            deleting={removeProcessMut.isPending}
+            canDelete={
+              !!selectedProcessId && !!q.data
+            }
          />
 
       {/* Modal */}

@@ -107,6 +107,10 @@ export async function updateProcessStatus(id: string, status: ProcessStatus) {
   return await api.patch(`/processes/${id}/status`, { status })
 }
 
+export async function removeProcess(id: string) {
+  return await api.delete(`/processes/${id}`)
+}
+
 export async function addTool(process_id: string, payload: { name: string; type?: ToolType; url?: string }) {
   const { data } = await api.post(`/processes/${process_id}/tools`, payload)
   return data
