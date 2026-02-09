@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { useCallback, useMemo, useState } from "react";
+import { useEffect, useCallback, useMemo, useState } from "react";
 import { buildGraphFromTree } from "../utils/buildGraph";
 import { Controls, ReactFlow, type ReactFlowInstance } from "@xyflow/react";
 import { ProcessNode } from "../components/nodes/ProcessNode";
@@ -33,7 +33,6 @@ export function ProcessTreePage() {
     const [moveMode, setMoveMode] = useState(false);
 
     const [rf, setRf] = useState<ReactFlowInstance | null>(null);
-
 
     const q = useQuery({
         queryKey: ["areaTree", areaId],
@@ -149,12 +148,26 @@ export function ProcessTreePage() {
       return { nodes, edges: layouted.edges };
     }, [layouted, moveMode, moveDnD.hoverParentId, onAddChild, onChangeStatus]);
 
+    useEffect(() => {
+      if (!moveMode) return
+
+      const onKeyDown = (e: KeyboardEvent) => {
+        if (e.key !== 'Escape') return
+
+        // cancela o processo de mover
+        e.preventDefault()
+        moveDnD.clearPreview()
+        setMoveMode(false)
+      }
+
+      window.addEventListener("keydown", onKeyDown)
+      return () => window.removeEventListener("keydown", onKeyDown)
+    }, [moveMode, moveDnD])
 
     function openCreateRoot() {
         setCreateParentId(null)
         setCreateModalOpen(true)
     }
-
 
     return (
     <div className="flex h-[calc(100vh-2rem)] min-h-160 flex-col gap-4">
@@ -190,9 +203,20 @@ export function ProcessTreePage() {
                   : "bg-white/5 ring-white/10 hover:bg-white/10",
               ].join(" ")}
             >
-              {moveMode ? "Modo edição: ON" : "Modo edição: OFF"}
+              {moveMode ? "Modo mover: ON" : "Modo mover: OFF"}
             </button>
 
+            {moveMode && (
+            <button
+              onClick={() => {
+                moveDnD.clearPreview();
+                setMoveMode(false);
+              }}
+              className="rounded-xl bg-white/5 px-4 py-2 text-sm ring-1 ring-white/10 hover:bg-white/10"
+            >
+              Cancelar (Esc)
+            </button>
+          )}
           </div>
         </div>
         {moveMode && (
