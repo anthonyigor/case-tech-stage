@@ -4,6 +4,11 @@ import type { ProcessStatus } from "../../api/processes";
 import { useEffect, useRef, useState } from "react";
 
 const STATUSES: ProcessStatus[] = ["ACTIVE", "DRAFT", "DEPRECATED"];
+const STATNAMES: any = {
+  ACTIVE: "ATIVO",
+  DRAFT: 'RASCUNHO',
+  DEPRECATED: "INATIVO"
+}
 
 function badge(status: string) {
   if (status === "ACTIVE") return "bg-emerald-500/15 text-emerald-100 ring-emerald-500/30";
@@ -74,7 +79,7 @@ export function ProcessNode({ data }: any) {
             className={`shrink-0 rounded-full px-2 py-1 text-[11px] ring-1 ${badge(data.status)} hover:brightness-110 hover:cursor-pointer disabled:opacity-60`}
             title="Alterar status"
           >
-            {data.status}
+            {STATNAMES[data.status]}
           </button>
 
           {open && (
@@ -93,7 +98,7 @@ export function ProcessNode({ data }: any) {
                     setOpen(false);
                   }}
                 >
-                  {s}
+                  {STATNAMES[s]}
                 </button>
               ))}
             </div>
