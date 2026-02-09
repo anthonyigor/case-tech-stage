@@ -3,6 +3,7 @@ import { IPeopleRepository } from "../people.repository";
 import { People } from "generated/prisma/client";
 import { CreatePeopleDto } from "../../dto/create-people.dto";
 import { PrismaService } from "src/infra/prisma/prisma.service";
+import { UpdatePeopleDto } from "../../dto/update-people.dto";
 
 @Injectable()
 export class PeoplePrismaRepository implements IPeopleRepository {
@@ -34,6 +35,13 @@ export class PeoplePrismaRepository implements IPeopleRepository {
     async findAll(): Promise<People[]> {
         return await this.prisma.people.findMany({
             include: { team: true }
+        })
+    }
+
+    async update(id: string, data: UpdatePeopleDto) {
+        await this.prisma.people.update({
+            where: { id },
+            data
         })
     }
 

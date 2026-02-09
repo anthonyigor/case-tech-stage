@@ -1,6 +1,7 @@
-import { ConflictException, Injectable } from "@nestjs/common";
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { IPeopleRepository } from "../repositories/people.repository";
 import { CreatePeopleDto } from "../dto/create-people.dto";
+import { UpdatePeopleDto } from "../dto/update-people.dto";
 
 @Injectable()
 export class PeopleService {
@@ -21,6 +22,24 @@ export class PeopleService {
 
     async findById(id: string) {
         return await this.peopleRepository.findById(id)
+    }
+
+    async update(id: string, data: UpdatePeopleDto) {
+        const person = await this.peopleRepository.findById(id)
+        if (!person) throw new NotFoundException('Pessoa não encontrada')
+
+        if (data.email) {
+            const email = data.email.trim()
+            const emailExists = await this.peopleRepository.findByEmail(email)
+            if (emailExists) {
+                if (person.id !== emailExists.id) throw new BadRequestException('Email informado já está em uso')
+            }
+        }
+
+        await this.peopleRepository.update(id, data)
+        return {
+            ok: true
+        }
     }
 
     async deleteById(id: string) {
