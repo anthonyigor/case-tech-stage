@@ -1,4 +1,4 @@
-import { FaFolderPlus, FaUserAlt, FaUsers } from "react-icons/fa"
+import { FaFolderPlus, FaUser, FaUserAlt, FaUsers } from "react-icons/fa"
 import { SidebarItem } from "./SidebarItem"
 import { TiThMenu } from "react-icons/ti"
 
@@ -29,11 +29,11 @@ export function Sidebar({
             <div className={`${panel} p-3`}>
                 {/* Header (perfil + collapse) */}
                 <div className="flex items-center gap-3 p-2">
-                    <div className="h-10 w-10 rounded-xl bg-white/10 ring-1 ring-white/10" />
+                    <div className="h-10 w-10 rounded-xl bg-white/10 ring-1 ring-white/10 flex items-center justify-center"><FaUser /></div>
                     {!collapsed && (
                         <div className="min-w-0">
-                        <div className="truncate font-semibold">Anima Ag.</div>
-                        <div className="truncate text-xs text-slate-400">Admin</div>
+                            <div className="truncate font-semibold">StageProcess</div>
+                            <div className="truncate text-xs text-slate-400">Master</div>
                         </div>
                     )}
 

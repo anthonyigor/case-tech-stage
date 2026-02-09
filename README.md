@@ -50,7 +50,9 @@ A aplicação permite criar, visualizar, mover, editar e organizar processos em 
 
 ---
 
-## Arquitetura 
+## Arquitetura
+
+![Arquitetura](assets/Diagrama%20c4%20case.png)
 
 ```text
 frontend/
@@ -77,6 +79,13 @@ backend/
 ## Documentação da API
 
 A documentação Swagger das rotas da API estará disponível no link **http://localhost:3000/docs** após a execução do servidor Nest.
+
+---
+## Screenshots
+![Screenshot1](assets/screenshot1.png)
+![Screenshot2](assets/screenshot2.png)
+![Screenshot4](assets/screenshot4.png)
+![Screenshot3](assets/screenshot3.png)
 
 ---
 ## Como executar esse projeto localmente
