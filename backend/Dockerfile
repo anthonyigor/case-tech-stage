@@ -1,38 +1,41 @@
-# ---------- STAGE 1: Build ----------
-FROM node:22-alpine AS builder
+# ---------- STAGE 1: deps ----------
+FROM node:22-slim AS deps
 WORKDIR /app
-
+RUN apt-get update -y && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 COPY package*.json ./
 RUN npm ci
 
+# ---------- STAGE 2: build ----------
+FROM node:22-slim AS build
+WORKDIR /app
+RUN apt-get update -y && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY package*.json ./
+COPY prisma ./prisma
 COPY . .
 
-COPY prisma ./prisma
-COPY prisma.config.ts ./prisma.config.ts
-
-# Gera Prisma Client
+# gera Prisma NO LINUX e escreve em /app/generated/prisma
 RUN npx prisma generate
 
-# Build do Nest (gera dist/)
+# build do Nest
 RUN npm run build
 
+# mantém só deps de produção
+RUN npm prune --omit=dev
 
-# ---------- STAGE 2: Production ----------
-FROM node:22-alpine
+# ---------- STAGE 3: runtime ----------
+FROM node:22-slim AS runtime
 WORKDIR /app
+ENV NODE_ENV=production
 
+RUN apt-get update -y && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
+
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/prisma ./prisma
+COPY --from=build /app/generated ./generated
 COPY package*.json ./
-RUN npm ci --omit=dev
-
-# Copia build
-COPY --from=builder /app/dist ./dist
-
-# Copia Prisma runtime (schema/migrations/config)
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
-
-COPY --from=builder /app/generated ./generated
 
 EXPOSE 3000
-
 CMD ["node", "dist/src/main.js"]
