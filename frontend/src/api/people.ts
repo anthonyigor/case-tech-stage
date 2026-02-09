@@ -3,7 +3,7 @@ import api from "./client";
 export type Person = {
   id: string;
   name: string;
-  email: string | null;
+  email: string;
   role: string | null;
   team_id: string | null;
   team?: { name: string } | null;
@@ -17,6 +17,12 @@ export type CreatePersonDto = {
     team_id?: string
 }
 
+export type UpdatePersonDto = {
+    name?: string
+    email?: string
+    role?: string
+}
+
 export async function createPerson(payload: CreatePersonDto): Promise<Person> {
     const { data } = await api.post("/people", payload);
     return data;
@@ -25,6 +31,10 @@ export async function createPerson(payload: CreatePersonDto): Promise<Person> {
 export async function getPeople(): Promise<Person[]> {
     const { data } = await api.get("/people");
     return data;
+}
+
+export async function updatePerson(id: string, payload: UpdatePersonDto) {
+    return await api.patch(`/people/${id}`, payload)    
 }
 
 export async function removePerson(id: string) {

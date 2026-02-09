@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { CreateTeamDto } from "../../api/teams";
 import { usePeople } from "../../hooks/usePeople";
 import type { Person } from "../../api/people";
@@ -14,14 +14,6 @@ export function EditTeamModal(props: {
   const [name, setName] = useState(props.team.name ?? "");
   const [description, setDescription] = useState(props.team.description ?? "");
   const [selectedIds, setSelectedIds] = useState<string[]>(props.team?.people?.map(p => p.id) ?? []);
-
-
-  // se trocar de time sem desmontar modal (edge case), reseta
-  useEffect(() => {
-    setName(props.team.name ?? "");
-    setDescription(props.team.description ?? "");
-    setSelectedIds(props.team?.people?.map(p => p.id) ?? []);
-  }, [props.team.id]);
 
   // map pra achar nome por id
   const byId = useMemo(() => {

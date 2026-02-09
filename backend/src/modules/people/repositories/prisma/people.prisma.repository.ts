@@ -34,7 +34,10 @@ export class PeoplePrismaRepository implements IPeopleRepository {
     
     async findAll(): Promise<People[]> {
         return await this.prisma.people.findMany({
-            include: { team: true }
+            include: { team: true },
+            orderBy: {
+                name: 'asc'
+            }
         })
     }
 
