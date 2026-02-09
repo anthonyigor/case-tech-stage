@@ -120,7 +120,7 @@ export function ProcessTreePage() {
         }));
 
         return { nodes: nodesWithActions, edges: laid.edges };
-    }, [q.data, moveMode, moveDnD.hoverParentId])
+    }, [q.data, moveMode, moveDnD.hoverParentId, onAddChild, onChangeStatus])
 
     function openCreateRoot() {
         setCreateParentId(null)
