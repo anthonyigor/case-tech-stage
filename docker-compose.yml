@@ -12,6 +12,42 @@ services:
       - "5433:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
+    networks: [app-network]
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: postgresql://master:senha_1234_stage_test@db:5432/processes?schema=public
+    ports:
+      - 3000:3000
+    depends_on:
+      - db
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    networks: [app-network]
+
+  migrator:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgresql://master:senha_1234_stage_test@db:5432/processes?schema=public
+    depends_on:
+      - db
+    command: ["sh", "-lc", "npx prisma generate && npx prisma migrate dev --name init && npx prisma db seed"]
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    networks: [app-network]
+    restart: "no"
+
+networks:
+  app-network:
 
 volumes:
   db_data:
