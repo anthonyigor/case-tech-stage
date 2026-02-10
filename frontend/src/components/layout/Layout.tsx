@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Sidebar } from "./Sidebar";
 import { TiThMenu } from "react-icons/ti";
 import { Outlet } from "react-router-dom";
-import { Toaster } from "react-hot-toast";
 
 export function Layout() {
     const [mobileOpen, setMobileOpen] = useState<boolean>(false)
@@ -10,7 +9,6 @@ export function Layout() {
 
     return (
         <>
-        <Toaster position="top-right"/>
         <div className="min-h-dvh bg-slate-950 text-slate-100">
             {/* Background */}
             <div className="pointer-events-none fixed inset-0">

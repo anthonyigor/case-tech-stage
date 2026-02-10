@@ -6,19 +6,20 @@ import { AuthService } from "./services/auth.service";
 import { IUserRepository } from "../users/repositories/user.repository";
 import { UserPrismaRepository } from "../users/repositories/prisma/user.prisma.repository";
 import 'dotenv/config'
+import { JwtStrategy } from "./strategies/jwt.strategy";
 
 @Module({
     imports: [
         PassportModule,
         JwtModule.register({
             secret: process.env.JWT_SECRET!,
-            signOptions: { expiresIn: '15m' },
         }),
     ],
     controllers: [AuthController],
     providers: [
         AuthService,
-        { provide: IUserRepository, useClass: UserPrismaRepository }
+        { provide: IUserRepository, useClass: UserPrismaRepository },
+        JwtStrategy
     ]
 })
 export class AuthModule {}

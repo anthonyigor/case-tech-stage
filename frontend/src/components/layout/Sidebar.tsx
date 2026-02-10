@@ -1,6 +1,8 @@
 import { FaFolderPlus, FaUser, FaUserAlt, FaUsers } from "react-icons/fa"
 import { SidebarItem } from "./SidebarItem"
 import { TiThMenu } from "react-icons/ti"
+import { clearAccessToken } from "../../auth/token"
+import { useNavigate } from "react-router-dom"
 
 type SidebarProps = {
     collapsed: boolean
@@ -23,6 +25,7 @@ export function Sidebar({
     onCloseMobile
 }: SidebarProps) {
     const panel = "h-full rounded-2xl bg-white/5 ring-1 ring-white/10 backdrop-blur-xl";
+    const navigate = useNavigate()
 
     const DesktopSidebar = (
         <aside className={["hidden lg:block", collapsed ? "w-[86px]" : "w-[320px]"].join(" ")}>
@@ -59,6 +62,10 @@ export function Sidebar({
                             collapsed={collapsed}
                         />
                     ))}
+
+                    <button onClick={() => { clearAccessToken(); navigate("/"); }}>
+                        Sair
+                    </button>
                 </nav>
             </div>
         </aside>

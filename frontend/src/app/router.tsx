@@ -4,31 +4,35 @@ import { AreasPage } from "../pages/AreasPage";
 import { ProcessTreePage } from "../pages/ProcessTreePage";
 import { PeoplePage } from "../pages/PeoplePage";
 import { TeamPage } from "../pages/TeamPage";
+import { LoginPage } from "../pages/LoginPage";
+import { RequireAuth } from "../components/RequireAuth";
 
 export const router = createBrowserRouter([
+  { path: '/', element: <LoginPage /> },
   {
-    element: <Layout />,
+    element: <RequireAuth />,
     children: [
       {
-        path: "/",
-        element: <AreasPage />,
+        element: <Layout />,
+        children: [
+          {
+            path: "/areas",
+            element: <AreasPage />,
+          },
+          { 
+            path: "/areas/:areaId/processos", 
+            element: <ProcessTreePage /> 
+          },
+          {
+            path: "/people",
+            element: <PeoplePage />
+          },
+          {
+            path: "/teams",
+            element: <TeamPage />
+          }
+        ],
       },
-      {
-        path: "/areas",
-        element: <AreasPage />,
-      },
-      { 
-        path: "/areas/:areaId/processos", 
-        element: <ProcessTreePage /> 
-      },
-      {
-        path: "/people",
-        element: <PeoplePage />
-      },
-      {
-        path: "/teams",
-        element: <TeamPage />
-      }
-    ],
-  },
+    ]
+  }
 ]);
