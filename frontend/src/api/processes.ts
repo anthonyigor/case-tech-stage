@@ -6,7 +6,7 @@ export type ProcessTreeItem = {
   title: string;
   description: string | null;
   type: "MANUAL" | "SYSTEM";
-  status: "ACTIVE" | "DRAFT" | "INACTIVE";
+  status: "ACTIVE" | "DRAFT" | "DEPRECATED";
   position: number;
   children: ProcessTreeItem[];
 };
