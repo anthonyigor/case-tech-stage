@@ -22,6 +22,7 @@ services:
       NODE_ENV: development
       PORT: 3000
       DATABASE_URL: postgresql://master:senha_1234_stage_test@db:5432/processes?schema=public
+      JWT_SECRET: 3262a9e1a1d02feb22f636656759d425
     ports:
       - 3000:3000
     depends_on:
