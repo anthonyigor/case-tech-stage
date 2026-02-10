@@ -94,3 +94,4 @@ A documentação Swagger das rotas da API estará disponível no link **http://l
 - Executar migrations e seed: **docker compose run --rm migrator**
 - Iniciar front e back: **docker compose up -d backend frontend**
 - Acessar a página web: **http://localhost:5173**
+- Logar com usuário padrão: **Usuário: master / Senha: 123456**

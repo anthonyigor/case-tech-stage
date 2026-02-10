@@ -1,4 +1,5 @@
 import { PrismaClient, ProcessStatus, ProcessType, ToolType } from 'generated/prisma/client';
+import * as bcrypt from 'bcrypt'
 
 const prisma = new PrismaClient();
 
@@ -13,6 +14,15 @@ async function main() {
   await prisma.people.deleteMany();
   await prisma.team.deleteMany();
   await prisma.area.deleteMany();
+
+  //users
+  await prisma.user.create({
+    data: {
+      username: "master",
+      password: await bcrypt.hash('123456', 10),
+      email: 'master@stage.com'
+    }
+  })
 
   // Teams
   const rhTeam = await prisma.team.create({
